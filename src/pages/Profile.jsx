@@ -1,13 +1,25 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, Loader2, CheckCircle2, Phone, MapPin, Languages } from 'lucide-react';
+import {
+  User,
+  Loader2,
+  CheckCircle2,
+  Phone,
+  MapPin,
+  Languages,
+  LogOut,
+  AlertTriangle,
+  Trash2,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { INDIAN_STATES_AND_UTS, INDIAN_DISTRICTS_BY_STATE, LANGUAGES } from '../constants/india';
 import { Card, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 
 export function Profile() {
-  const { farmer, updateProfile } = useAuth();
+  const { farmer, updateProfile, logout, deleteAccount } = useAuth();
+  const navigate = useNavigate();
 
   const [name, setName] = useState(farmer?.name || '');
   const [state, setState] = useState(farmer?.state || '');
@@ -16,6 +28,27 @@ export function Profile() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
+
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+
+  function handleLogout() {
+    logout();
+    navigate('/login');
+  }
+
+  async function handleDeleteAccount() {
+    setDeleteError('');
+    setDeleting(true);
+    try {
+      await deleteAccount();
+      navigate('/login');
+    } catch (err) {
+      setDeleteError(err.message || 'Could not delete your account. Please try again.');
+      setDeleting(false);
+    }
+  }
 
   const districts = state ? INDIAN_DISTRICTS_BY_STATE[state] || [] : [];
 
@@ -165,6 +198,70 @@ export function Profile() {
               {saving ? 'Saving...' : 'Save changes'}
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="space-y-4 p-6">
+          <div>
+            <h2 className="font-heading font-semibold text-foreground">Account</h2>
+            <p className="text-sm text-muted-foreground">Sign out of MandiMitra on this device.</p>
+          </div>
+          <Button type="button" variant="outline" onClick={handleLogout}>
+            <LogOut className="h-4 w-4" /> Log out
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="border-destructive/30">
+        <CardContent className="space-y-4 p-6">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-destructive" />
+            <h2 className="font-heading font-semibold text-destructive">Danger zone</h2>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Deleting your account permanently removes your profile and login from MandiMitra.
+            This cannot be undone. Your past bookings and grievances stay on record (as they
+            would at a real mandi office), but you won't be able to log in to view or manage
+            them anymore.
+          </p>
+
+          {deleteError && <p className="text-sm text-destructive">{deleteError}</p>}
+
+          {!confirmingDelete ? (
+            <Button
+              type="button"
+              variant="danger"
+              onClick={() => setConfirmingDelete(true)}
+            >
+              <Trash2 className="h-4 w-4" /> Delete my account
+            </Button>
+          ) : (
+            <div className="space-y-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4">
+              <p className="text-sm font-medium text-foreground">
+                Are you sure? This will permanently delete your MandiMitra account.
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="danger"
+                  disabled={deleting}
+                  onClick={handleDeleteAccount}
+                >
+                  {deleting && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {deleting ? 'Deleting...' : 'Yes, delete my account'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={deleting}
+                  onClick={() => setConfirmingDelete(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

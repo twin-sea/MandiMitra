@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { registerFarmer, loginFarmer, getMe, updateMe } from '../services/api';
+import { registerFarmer, loginFarmer, getMe, updateMe, deleteMe } from '../services/api';
 import i18n from '../i18n';
 
 const TOKEN_KEY = 'mandimitra_token';
@@ -91,8 +91,19 @@ export function AuthProvider({ children }) {
     [token]
   );
 
+  // Permanently deletes the real account from the database, then logs the
+  // farmer out of this browser the same way `logout` does.
+  const deleteAccount = useCallback(async () => {
+    await deleteMe(token);
+    localStorage.removeItem(TOKEN_KEY);
+    setToken('');
+    setFarmer(null);
+  }, [token]);
+
   return (
-    <AuthContext.Provider value={{ farmer, token, loading, register, login, logout, updateProfile }}>
+    <AuthContext.Provider
+      value={{ farmer, token, loading, register, login, logout, updateProfile, deleteAccount }}
+    >
       {children}
     </AuthContext.Provider>
   );

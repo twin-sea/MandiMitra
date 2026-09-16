@@ -444,6 +444,16 @@ app.put('/auth/me', requireAuth, async (req, res) => {
   res.json(toPublicFarmer(updated));
 });
 
+// Permanently removes the logged-in farmer's account and row from the real
+// database. Bookings/grievances store the farmer's name+phone as plain text
+// (not a foreign key to Farmer), so they intentionally stay as a real
+// historical record after the account is gone, the same way they would at
+// a real mandi office.
+app.delete('/auth/me', requireAuth, async (req, res) => {
+  await prisma.farmer.delete({ where: { id: req.farmer.id } });
+  res.json({ success: true });
+});
+
 app.get('/', (req, res) => {
   res.send('MandiMitra backend is running!');
 });

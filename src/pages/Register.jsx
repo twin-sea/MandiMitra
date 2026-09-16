@@ -143,9 +143,18 @@ export function Register() {
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className={fieldClass}
+                    className={`${fieldClass} pr-9`}
                     placeholder="6+ characters"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    tabIndex={-1}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
               <div>
@@ -156,20 +165,20 @@ export function Register() {
                     type={showPassword ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className={fieldClass}
+                    className={`${fieldClass} pr-9`}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    tabIndex={-1}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
             </div>
-
-            <button
-              type="button"
-              onClick={() => setShowPassword((v) => !v)}
-              className="-mt-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"
-            >
-              {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-              {showPassword ? 'Hide passwords' : 'Show passwords'}
-            </button>
 
             <div>
               <label className="text-sm font-medium text-foreground">State / राज्य</label>

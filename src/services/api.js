@@ -131,3 +131,13 @@ export async function updateMe(token, data) {
   if (!res.ok) throw new Error(result.error || 'Could not update profile.');
   return result;
 }
+
+export async function deleteMe(token) {
+  const res = await fetch(`${API_URL}/auth/me`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.error || 'Could not delete account.');
+  return result;
+}
