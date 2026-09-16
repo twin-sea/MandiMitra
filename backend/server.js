@@ -448,22 +448,6 @@ app.get('/', (req, res) => {
   res.send('MandiMitra backend is running!');
 });
 
-// Temporary diagnostic route - reveals only the database HOSTNAME the
-// server is actually using at runtime (never the password), so we can
-// verify the DATABASE_URL env var actually took effect. Safe to leave
-// briefly, but should be removed once the connection issue is confirmed
-// fixed.
-app.get('/debug-db-host', (req, res) => {
-  const raw = process.env.DATABASE_URL || '';
-  const match = raw.match(/@([^/:]+)(?::(\d+))?\//);
-  res.json({
-    isSet: !!raw,
-    length: raw.length,
-    host: match ? match[1] : null,
-    port: match ? match[2] : null,
-  });
-});
-
 app.get('/crops', async (req, res) => {
   const crops = await prisma.crop.findMany();
   res.json(crops);
