@@ -59,7 +59,23 @@ export function ChatWidget() {
       setMessages((prev) => [...prev, { sender: 'bot', text: data.reply }]);
       setHistory(data.history || []);
     } catch (err) {
-      setError(err.message || 'Something went wrong. Please try again.');
+      // QUOTA_EXCEEDED / CHATBOT_UNAVAILABLE are stable codes from the
+      // backend (see server.js) for the real, expected case where the AI
+      // provider's daily free-tier limit is used up for the day - a plain
+      // "Chatbot service error" reads like the app is broken, when really
+      // it's just this one assistant feature that's temporarily out of
+      // capacity. Booking, queue tracking, and prices still work fine.
+      if (err.message === 'QUOTA_EXCEEDED') {
+        setError(
+          'सहायक अभी व्यस्त है (The assistant has reached its daily limit) - please try again in a little while. Booking, queue tracking, and prices still work normally.'
+        );
+      } else if (err.message === 'CHATBOT_UNAVAILABLE') {
+        setError(
+          'सहायक अभी उपलब्ध नहीं है (The assistant is temporarily unavailable) - please try again shortly.'
+        );
+      } else {
+        setError(err.message || 'Something went wrong. Please try again.');
+      }
     } finally {
       setIsSending(false);
     }

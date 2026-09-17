@@ -843,7 +843,17 @@ Rules:
     const geminiData = await geminiRes.json();
 
     if (!geminiRes.ok) {
-      return res.status(geminiRes.status).json({ error: 'Chatbot service error', details: geminiData });
+      // The Gemini API's free tier caps this whole app at a small number of
+      // chatbot messages per day, shared across every farmer using it - so
+      // this specific failure is expected to happen for real users once
+      // that's used up, not a bug. Tell the frontend which case it is with
+      // a stable code (rather than a raw English sentence) so it can show
+      // something clearer than a generic "service error" to the farmer.
+      const isQuotaExceeded =
+        geminiRes.status === 429 || geminiData?.error?.status === 'RESOURCE_EXHAUSTED';
+      return res
+        .status(geminiRes.status)
+        .json({ error: isQuotaExceeded ? 'QUOTA_EXCEEDED' : 'CHATBOT_UNAVAILABLE', details: geminiData });
     }
 
     const candidate = geminiData.candidates?.[0];
