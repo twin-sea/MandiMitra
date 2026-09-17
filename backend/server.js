@@ -739,12 +739,39 @@ app.get('/mandis/:mandiId/crops/:cropId/price-history', async (req, res) => {
   res.json({ ...result, fetchedAt: new Date().toISOString() });
 });
 
+// Matches the language codes the frontend's i18n setup actually supports
+// (public/languages/*.json), so the chatbot's "reply in the farmer's
+// language" instruction below can name the real language instead of just
+// guessing from the script the farmer happens to type in.
+const CHATBOT_LANGUAGE_NAMES = {
+  hi: 'Hindi',
+  en: 'English',
+  bn: 'Bengali',
+  te: 'Telugu',
+  mr: 'Marathi',
+  ta: 'Tamil',
+  gu: 'Gujarati',
+  kn: 'Kannada',
+  ml: 'Malayalam',
+  pa: 'Punjabi',
+  or: 'Odia',
+  as: 'Assamese',
+};
+
 app.post('/chatbot/message', async (req, res) => {
   const { message, farmerName, farmerPhone, history } = req.body;
 
   if (!message || !farmerPhone) {
     return res.status(400).json({ error: 'message and farmerPhone are required' });
   }
+
+  // Look up the farmer's real saved language preference from the database -
+  // not just whatever the frontend happens to pass - so the chatbot always
+  // matches the language they actually picked on the site (Hindi, Gujarati,
+  // Tamil, etc.), not only Hindi or English as before.
+  const farmerRecord = await prisma.farmer.findUnique({ where: { phone: farmerPhone } });
+  const preferredLanguageCode = farmerRecord?.preferredLanguage || 'hi';
+  const preferredLanguageName = CHATBOT_LANGUAGE_NAMES[preferredLanguageCode] || 'Hindi';
 
   const crops = await prisma.crop.findMany();
   const mandis = await prisma.mandi.findMany();
@@ -771,7 +798,7 @@ app.post('/chatbot/message', async (req, res) => {
   const systemInstruction = {
     parts: [
       {
-        text: `You are MandiMitra's assistant, helping an Indian farmer named ${farmerName || 'a farmer'} (phone ${farmerPhone}) with mandi slot booking, queue status, payment status, grievances, live crop prices, and weather. Reply in the same language the farmer writes in (Hindi or English). Be brief and clear.
+        text: `You are MandiMitra's assistant, helping an Indian farmer named ${farmerName || 'a farmer'} (phone ${farmerPhone}) with mandi slot booking, queue status, payment status, grievances, live crop prices, and weather. This farmer has set ${preferredLanguageName} as their preferred language in the app, so reply in ${preferredLanguageName} by default - not English, unless ${preferredLanguageName} is English. If the farmer writes to you in a different language than ${preferredLanguageName}, reply in that language instead for that message, since matching whatever they're actually writing in is always clearer than sticking rigidly to their saved preference. Be brief and clear.
 
 Available crops:
 ${cropList}
