@@ -68,6 +68,7 @@
   "modal.bookingDetails.mandiName.label": "ਮੰਡੀ ਦਾ ਨਾਮ:",
   "modal.bookingDetails.centreName.label": "ਕੇਂਦਰ ਦਾ ਨਾਮ:",
   "modal.bookingDetails.date.label": "ਮਿਤੀ:",
+  "modal.bookingDetails.slot.label": "ਸਮਾਂ ਸਲਾਟ:",
   "modal.confirmBooking.button": "ਬੁਕਿੰਗ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ!",
   "modal.helpdesk.title": "ਕਿਸਾਨ ਹੈਲਪਡੈਸਕ",
   "helpdesk.freeNumber.label": "ਮੁਫ਼ਤ ਟੋਲ-ਫ੍ਰੀ ਨੰਬਰ",
@@ -84,7 +85,7 @@
 
   "booking.form.step.crop.label": "1. ਫਸਲ ਚੁਣੋ (Select Crop):",
   "booking.form.step.centre.label": "2. ਖਰੀਦ ਕੇਂਦਰ (Procurement Centre):",
-  "booking.form.step.slot.label": "3. ਦਾਖਲਾ ਸਮਾਂ (Slot Time):",
+  "booking.form.step.slot.label": "5. ਸਮਾਂ ਸਲਾਟ ਚੁਣੋ:",
 
   "crops.wheat": "ਕਣਕ (Wheat)",
   "crops.mustard": "ਸਰ੍ਹੋਂ (Mustard)",
@@ -139,8 +140,13 @@
   "yourVehicle.label": "⭐ ਤੁਹਾਡਾ ਵਾਹਨ:",
 
   "booking.form.step.mandi.label": "2. ਮੰਡੀ ਚੁਣੋ:",
-  "booking.form.step.quantity.label": "4. ਮਾਤਰਾ (ਕੁਇੰਟਲਾਂ ਵਿੱਚ):",
-  "booking.form.step.date.label": "5. ਮਿਤੀ ਚੁਣੋ:",
+  "booking.form.step.quantity.label": "3. ਮਾਤਰਾ (ਕੁਇੰਟਲਾਂ ਵਿੱਚ):",
+  "booking.form.step.date.label": "4. ਮਿਤੀ ਚੁਣੋ:",
+  "booking.slot.select.placeholder": "ਸਮਾਂ ਸਲਾਟ ਚੁਣੋ",
+  "booking.slot.pickDateFirst": "ਉਪਲਬਧ ਸਮਾਂ ਸਲਾਟ ਦੇਖਣ ਲਈ ਪਹਿਲਾਂ ਮਿਤੀ ਚੁਣੋ",
+  "booking.slot.loading": "ਉਪਲਬਧਤਾ ਦੀ ਜਾਂਚ ਹੋ ਰਹੀ ਹੈ...",
+  "booking.slot.full": "ਭਰਿਆ ਹੋਇਆ",
+  "booking.slot.spotsLeft": "{count} ਥਾਂਵਾਂ ਬਾਕੀ",
   "booking.validation.required": "ਪੁਸ਼ਟੀ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਕਿਰਪਾ ਕਰਕੇ ਸਾਰੇ ਖੇਤਰ ਭਰੋ।",
   "booking.select.mandi.placeholder": "ਇੱਕ ਮੰਡੀ ਚੁਣੋ",
   "noActiveBooking.title": "ਕੋਈ ਸਰਗਰਮ ਬੁਕਿੰਗ ਨਹੀਂ",

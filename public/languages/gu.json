@@ -69,6 +69,7 @@
   "modal.bookingDetails.mandiName.label": "મંડી નામ:",
   "modal.bookingDetails.centreName.label": "કેન્દ્રનું નામ:",
   "modal.bookingDetails.date.label": "તારીખ:",
+  "modal.bookingDetails.slot.label": "સમય સ્લોટ:",
   "modal.confirmBooking.button": "બુકિંગ પુષ્ટિ કરો!",
   "modal.helpdesk.title": "કિસાન સહાયદેશક",
   "helpdesk.freeNumber.label": "મફત ટોલ-ફ્રી નંબર",
@@ -85,7 +86,7 @@
 
   "booking.form.step.crop.label": "1. ફસલ પસંદ કરો (Select Crop):",
   "booking.form.step.centre.label": "2. ખરીદ કેન્દ્ર (Procurement Centre):",
-  "booking.form.step.slot.label": "3. પ્રવેશ સમય (Slot Time):",
+  "booking.form.step.slot.label": "5. સમય સ્લોટ પસંદ કરો:",
 
   "crops.wheat": "ઘઉં (Wheat)",
   "crops.mustard": "સરસવ (Mustard)",
@@ -140,8 +141,13 @@
   "yourVehicle.label": "⭐ તમારું વાહન:",
 
   "booking.form.step.mandi.label": "2. મંડી પસંદ કરો:",
-  "booking.form.step.quantity.label": "4. માત્રા (ક્વિન્ટલમાં):",
-  "booking.form.step.date.label": "5. તારીખ પસંદ કરો:",
+  "booking.form.step.quantity.label": "3. માત્રા (ક્વિન્ટલમાં):",
+  "booking.form.step.date.label": "4. તારીખ પસંદ કરો:",
+  "booking.slot.select.placeholder": "સમય સ્લોટ પસંદ કરો",
+  "booking.slot.pickDateFirst": "ઉપલબ્ધ સમય સ્લોટ જોવા માટે પહેલા તારીખ પસંદ કરો",
+  "booking.slot.loading": "ઉપલબ્ધતા તપાસાઈ રહી છે...",
+  "booking.slot.full": "ભરાયેલું",
+  "booking.slot.spotsLeft": "{count} જગ્યા બાકી",
   "booking.validation.required": "કૃપા કરીને પુષ્ટિ કરતા પહેલા બધી માહિતી ભરો.",
   "booking.select.mandi.placeholder": "મંડી પસંદ કરો",
   "noActiveBooking.title": "કોઈ સક્રિય બુકિંગ નથી",

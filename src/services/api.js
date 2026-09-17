@@ -29,15 +29,34 @@ export async function getCropPrice(mandiId, cropId) {
   return res.json();
 }
 
-export async function createBooking({ farmerName, farmerPhone, cropId, mandiId, quantityQuintal, slotDate }) {
+export async function createBooking({ farmerName, farmerPhone, cropId, mandiId, quantityQuintal, slotDate, timeSlot }) {
   const res = await fetch(`${API_URL}/bookings`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ farmerName, farmerPhone, cropId, mandiId, quantityQuintal, slotDate }),
+    body: JSON.stringify({ farmerName, farmerPhone, cropId, mandiId, quantityQuintal, slotDate, timeSlot }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Could not create booking.');
   return data;
+}
+
+// The real, shared list of bookable time slots, straight from the backend
+// (single source of truth - see TIME_SLOTS in server.js) rather than a
+// second hardcoded copy on the frontend that could drift out of sync.
+export async function getTimeSlots() {
+  const res = await fetch(`${API_URL}/time-slots`);
+  if (!res.ok) throw new Error('Could not load time slots.');
+  const data = await res.json();
+  return data.timeSlots;
+}
+
+// Real, live availability (booked vs. capacity) for every time slot at a
+// mandi on a given date, so the booking form can show farmers which slots
+// are already filling up before they pick one.
+export async function getSlotAvailability(mandiId, date) {
+  const res = await fetch(`${API_URL}/mandis/${mandiId}/slots?date=${encodeURIComponent(date)}`);
+  if (!res.ok) throw new Error('Could not load slot availability.');
+  return res.json();
 }
 
 export async function getBookings({ farmerPhone } = {}) {

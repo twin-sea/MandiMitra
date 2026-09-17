@@ -156,6 +156,7 @@ export function MyBookings() {
                     <div className="flex items-center gap-1.5 text-muted-foreground">
                       <Calendar className="h-3.5 w-3.5 text-primary shrink-0" />
                       {formatSlotDate(b.slotDate)}
+                      {b.timeSlot ? ` · ${b.timeSlot}` : ''}
                     </div>
                     <div className="flex items-center gap-1.5 text-muted-foreground">
                       <Hash className="h-3.5 w-3.5 text-primary shrink-0" />
@@ -252,6 +253,12 @@ export function MyBookings() {
                       {formatSlotDate(passBooking.slotDate)}
                     </span>
                   </p>
+                  {passBooking.timeSlot && (
+                    <p>
+                      <span className="text-muted-foreground">Time Slot: </span>
+                      <span className="font-semibold text-foreground">{passBooking.timeSlot}</span>
+                    </p>
+                  )}
                 </div>
               </div>
 

@@ -68,6 +68,7 @@
   "modal.bookingDetails.mandiName.label": "மண்டி பெயர்:",
   "modal.bookingDetails.centreName.label": "மைய பெயர்:",
   "modal.bookingDetails.date.label": "தேதி:",
+  "modal.bookingDetails.slot.label": "நேர இடைவெளி:",
   "modal.confirmBooking.button": "முன்பதிவை உறுதிப்படுத்தவும்!",
   "modal.helpdesk.title": "விவசாயி உதவி மையம்",
   "helpdesk.freeNumber.label": "இலவச டோல்-ஃப்ரீ எண்",
@@ -84,7 +85,7 @@
 
   "booking.form.step.crop.label": "1. பயிரைத் தேர்ந்தெடுக்கவும் (Select Crop):",
   "booking.form.step.centre.label": "2. கொள்முதல் மையம் (Procurement Centre):",
-  "booking.form.step.slot.label": "3. நுழைவு நேரம் (Slot Time):",
+  "booking.form.step.slot.label": "5. நேர இடைவெளியைத் தேர்ந்தெடுக்கவும்:",
 
   "crops.wheat": "கோதுமை (Wheat)",
   "crops.mustard": "கடுகு (Mustard)",
@@ -139,8 +140,13 @@
   "yourVehicle.label": "⭐ உங்கள் வாகனம்:",
 
   "booking.form.step.mandi.label": "2. மண்டியைத் தேர்ந்தெடுக்கவும்:",
-  "booking.form.step.quantity.label": "4. அளவு (குயிண்டாலில்):",
-  "booking.form.step.date.label": "5. தேதியைத் தேர்ந்தெடுக்கவும்:",
+  "booking.form.step.quantity.label": "3. அளவு (குயிண்டாலில்):",
+  "booking.form.step.date.label": "4. தேதியைத் தேர்ந்தெடுக்கவும்:",
+  "booking.slot.select.placeholder": "நேர இடைவெளியைத் தேர்ந்தெடுக்கவும்",
+  "booking.slot.pickDateFirst": "கிடைக்கும் நேர இடைவெளிகளைக் காண முதலில் தேதியைத் தேர்ந்தெடுக்கவும்",
+  "booking.slot.loading": "கிடைக்குமா என்று சரிபார்க்கிறது...",
+  "booking.slot.full": "நிரம்பியது",
+  "booking.slot.spotsLeft": "{count} இடங்கள் மீதம்",
   "booking.validation.required": "உறுதிப்படுத்தும் முன் தயவுசெய்து அனைத்து விவரங்களையும் நிரப்பவும்.",
   "booking.select.mandi.placeholder": "ஒரு மண்டியைத் தேர்ந்தெடுக்கவும்",
   "noActiveBooking.title": "செயலில் உள்ள முன்பதிவு இல்லை",

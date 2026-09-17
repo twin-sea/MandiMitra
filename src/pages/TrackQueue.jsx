@@ -105,6 +105,7 @@ export function TrackQueue() {
                     </p>
                     <p className="text-xs text-muted-foreground">
                       Token: <span className="font-mono">{selectedBooking?.tokenNumber}</span>
+                      {selectedBooking?.timeSlot ? ` · ${selectedBooking.timeSlot}` : ''}
                     </p>
                   </div>
                 </div>

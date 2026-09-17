@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import { getCrops, getMandis, createBooking, getBookings, getBookingQueue } from '../services/api';
+import { getCrops, getMandis, createBooking, getBookings, getBookingQueue, getSlotAvailability } from '../services/api';
 
 function getTodayISODate() {
   return new Date().toISOString().slice(0, 10);
@@ -43,6 +43,13 @@ const FarmerDashboard = () => {
   const [selectedMandiId, setSelectedMandiId] = useState('');
   const [quantity, setQuantity] = useState('');
   const [slotDate, setSlotDate] = useState('');
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
+  // Real, live per-slot availability for the chosen mandi+date, fetched
+  // fresh from the backend (booked count vs. that mandi's real capacity) -
+  // never estimated on the frontend.
+  const [slotAvailability, setSlotAvailability] = useState(null);
+  const [slotAvailabilityLoading, setSlotAvailabilityLoading] = useState(false);
+  const [slotAvailabilityError, setSlotAvailabilityError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [confirmedBooking, setConfirmedBooking] = useState(null);
@@ -109,13 +116,44 @@ const FarmerDashboard = () => {
     setSelectedMandiId(preselectMandiId ? String(preselectMandiId) : '');
     setQuantity('');
     setSlotDate('');
+    setSelectedTimeSlot('');
+    setSlotAvailability(null);
+    setSlotAvailabilityError('');
     setSubmitError('');
     setShowBookingModal(true);
   };
 
+  // Once a mandi and a date are both picked, fetch the real, live
+  // availability for every time slot at that mandi on that date. Re-fetches
+  // whenever either changes, and clears any time slot already chosen for a
+  // different mandi/date (its availability no longer applies).
+  useEffect(() => {
+    setSelectedTimeSlot('');
+    if (!selectedMandiId || !slotDate) {
+      setSlotAvailability(null);
+      return;
+    }
+    let cancelled = false;
+    setSlotAvailabilityLoading(true);
+    setSlotAvailabilityError('');
+    getSlotAvailability(Number(selectedMandiId), slotDate)
+      .then((data) => {
+        if (!cancelled) setSlotAvailability(data);
+      })
+      .catch((err) => {
+        if (!cancelled) setSlotAvailabilityError(err.message || 'Could not load time slot availability.');
+      })
+      .finally(() => {
+        if (!cancelled) setSlotAvailabilityLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedMandiId, slotDate]);
+
   const handleConfirmBooking = async () => {
     setSubmitError('');
-    if (!selectedCropId || !selectedMandiId || !quantity || !slotDate) {
+    if (!selectedCropId || !selectedMandiId || !quantity || !slotDate || !selectedTimeSlot) {
       setSubmitError(t('booking.validation.required'));
       return;
     }
@@ -128,12 +166,21 @@ const FarmerDashboard = () => {
         mandiId: Number(selectedMandiId),
         quantityQuintal: Number(quantity),
         slotDate,
+        timeSlot: selectedTimeSlot,
       });
       setConfirmedBooking(booking);
       setCurrentBooking(booking);
       loadCurrentBooking();
     } catch (err) {
       setSubmitError(err.message || 'Could not create booking. Please try again.');
+      // The slot may have just filled up (or someone else took the last
+      // spot) - refresh real availability so the picker reflects reality
+      // instead of still showing the slot as open.
+      if (selectedMandiId && slotDate) {
+        getSlotAvailability(Number(selectedMandiId), slotDate)
+          .then(setSlotAvailability)
+          .catch(() => {});
+      }
     } finally {
       setSubmitting(false);
     }
@@ -299,6 +346,11 @@ const FarmerDashboard = () => {
                   </span>
                   <p className="font-bold text-foreground">
                     {formatSlotDate(currentBooking.slotDate)}
+                    {currentBooking.timeSlot && (
+                      <span className="block text-xs font-semibold text-muted-foreground mt-0.5">
+                        {currentBooking.timeSlot}
+                      </span>
+                    )}
                   </p>
                 </div>
 
@@ -558,6 +610,47 @@ const FarmerDashboard = () => {
                     />
                   </div>
 
+                  <div>
+                    <label className="text-xs font-bold text-foreground block mb-1.5">
+                      {t('booking.form.step.slot.label')}
+                    </label>
+                    {!selectedMandiId || !slotDate ? (
+                      <p className="text-xs text-muted-foreground">{t('booking.slot.pickDateFirst')}</p>
+                    ) : slotAvailabilityLoading ? (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t('booking.slot.loading')}
+                      </p>
+                    ) : slotAvailabilityError ? (
+                      <p className="text-xs text-destructive">{slotAvailabilityError}</p>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-2">
+                        {(slotAvailability?.slots || []).map((slot) => {
+                          const isSelected = selectedTimeSlot === slot.timeSlot;
+                          return (
+                            <button
+                              key={slot.timeSlot}
+                              type="button"
+                              disabled={slot.full}
+                              onClick={() => setSelectedTimeSlot(slot.timeSlot)}
+                              className={`p-2.5 rounded-xl border text-left text-xs font-semibold transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
+                                isSelected
+                                  ? 'border-primary bg-accent text-accent-foreground ring-2 ring-primary/30 font-bold'
+                                  : 'border-border hover:bg-accent text-foreground'
+                              }`}
+                            >
+                              <span className="block">{slot.timeSlot}</span>
+                              <span className="block mt-0.5 text-[11px] font-medium text-muted-foreground">
+                                {slot.full
+                                  ? t('booking.slot.full')
+                                  : t('booking.slot.spotsLeft', { count: slot.available })}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
                   {submitError && <p className="text-xs text-destructive">{submitError}</p>}
 
                   <div className="pt-2">
@@ -596,6 +689,11 @@ const FarmerDashboard = () => {
                     <div>
                       <strong>{t('modal.bookingDetails.date.label')}</strong> {formatSlotDate(confirmedBooking.slotDate)}
                     </div>
+                    {confirmedBooking.timeSlot && (
+                      <div>
+                        <strong>{t('modal.bookingDetails.slot.label')}</strong> {confirmedBooking.timeSlot}
+                      </div>
+                    )}
                   </div>
                   <Button
                     variant="outline"

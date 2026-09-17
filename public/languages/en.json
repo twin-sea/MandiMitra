@@ -69,6 +69,7 @@
   "modal.bookingDetails.mandiName.label": "Mandi Name:",
   "modal.bookingDetails.centreName.label": "Centre Name:",
   "modal.bookingDetails.date.label": "Date:",
+  "modal.bookingDetails.slot.label": "Time Slot:",
   "modal.confirmBooking.button": "Confirm Booking!",
   "modal.helpdesk.title": "Kisan Helpdesk",
   "helpdesk.freeNumber.label": "Free Toll-Free Number",
@@ -85,7 +86,7 @@
 
   "booking.form.step.crop.label": "1. Select Crop (फसल चुनें):",
   "booking.form.step.centre.label": "2. Procurement Centre (चयनित खरीद केंद्र):",
-  "booking.form.step.slot.label": "3. Slot Time (प्रवेश समय):",
+  "booking.form.step.slot.label": "5. Select Time Slot:",
 
   "crops.wheat": "गेहूं (Wheat)",
   "crops.mustard": "सरसों (Mustard)",
@@ -140,8 +141,13 @@
   "yourVehicle.label": "⭐ Your vehicle:",
 
   "booking.form.step.mandi.label": "2. Select Mandi:",
-  "booking.form.step.quantity.label": "4. Quantity (in Quintals):",
-  "booking.form.step.date.label": "5. Select Date:",
+  "booking.form.step.quantity.label": "3. Quantity (in Quintals):",
+  "booking.form.step.date.label": "4. Select Date:",
+  "booking.slot.select.placeholder": "Select a time slot",
+  "booking.slot.pickDateFirst": "Select a date first to see available time slots",
+  "booking.slot.loading": "Checking availability...",
+  "booking.slot.full": "Full",
+  "booking.slot.spotsLeft": "{count} spots left",
   "booking.validation.required": "Please fill in all fields before confirming.",
   "booking.select.mandi.placeholder": "Select a mandi",
   "noActiveBooking.title": "No Active Booking Yet",

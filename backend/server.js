@@ -17,10 +17,65 @@ app.use(express.json());
 const BOOKING_STATUSES = ['CONFIRMED', 'ARRIVED', 'GRADED', 'PAYMENT_INITIATED', 'PAID', 'CANCELLED'];
 const GRIEVANCE_STATUSES = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'REJECTED'];
 
+// Real 2-hour arrival windows covering typical mandi operating hours
+// (6 AM - 6 PM). Farmers pick one of these for their booking date so they
+// don't all collide at the gate at once - the single source of truth for
+// both the backend validation/capacity check and the frontend picker
+// (the frontend fetches this list from GET /time-slots instead of
+// hardcoding its own copy).
+const TIME_SLOTS = [
+  '06:00-08:00',
+  '08:00-10:00',
+  '10:00-12:00',
+  '12:00-14:00',
+  '14:00-16:00',
+  '16:00-18:00',
+];
+
 function generateBookingToken() {
   const year = new Date().getFullYear();
   const random = Math.floor(1000 + Math.random() * 9000);
   return `MM-${year}-${random}`;
+}
+
+// Shared by the real POST /bookings route and the AI chatbot's createBooking
+// function so both go through the exact same real validation and slot
+// capacity check - one farmer can't get a seat the other can't, whichever
+// way they booked.
+async function createRealBooking({ farmerName, farmerPhone, cropId, mandiId, quantityQuintal, slotDate, timeSlot }) {
+  if (!timeSlot || !TIME_SLOTS.includes(timeSlot)) {
+    return { error: `Please choose a valid time slot. Must be one of: ${TIME_SLOTS.join(', ')}` };
+  }
+
+  const mandi = await prisma.mandi.findUnique({ where: { id: Number(mandiId) } });
+  if (!mandi) {
+    return { error: 'Mandi not found' };
+  }
+
+  const normalizedSlotDate = new Date(slotDate);
+
+  const alreadyBooked = await prisma.booking.count({
+    where: { mandiId: mandi.id, slotDate: normalizedSlotDate, timeSlot, status: { not: 'CANCELLED' } },
+  });
+  if (alreadyBooked >= mandi.slotCapacity) {
+    return { error: 'This time slot is full. Please choose a different slot or date.' };
+  }
+
+  const booking = await prisma.booking.create({
+    data: {
+      tokenNumber: generateBookingToken(),
+      farmerName,
+      farmerPhone,
+      cropId: Number(cropId),
+      mandiId: mandi.id,
+      quantityQuintal: Number(quantityQuintal),
+      slotDate: normalizedSlotDate,
+      timeSlot,
+    },
+    include: { crop: true, mandi: true },
+  });
+
+  return { booking };
 }
 
 function generateTicketNumber() {
@@ -174,8 +229,12 @@ const CHATBOT_TOOLS = [
             mandiId: { type: 'number', description: 'The id of the mandi, from the mandi list given in context.' },
             quantityQuintal: { type: 'number', description: 'Quantity in quintals.' },
             slotDate: { type: 'string', description: 'Date in YYYY-MM-DD format.' },
+            timeSlot: {
+              type: 'string',
+              description: `A real 2-hour arrival window on slotDate. Must be exactly one of: ${TIME_SLOTS.join(', ')}.`,
+            },
           },
-          required: ['cropId', 'mandiId', 'quantityQuintal', 'slotDate'],
+          required: ['cropId', 'mandiId', 'quantityQuintal', 'slotDate', 'timeSlot'],
         },
       },
       {
@@ -255,22 +314,20 @@ async function runChatbotFunction(name, args, farmer) {
   try {
     if (name === 'createBooking') {
       const crop = await prisma.crop.findUnique({ where: { id: Number(args.cropId) } });
-      const mandi = await prisma.mandi.findUnique({ where: { id: Number(args.mandiId) } });
-      if (!crop || !mandi) return { error: 'Invalid crop or mandi id' };
+      if (!crop) return { error: 'Invalid crop id' };
 
-      const booking = await prisma.booking.create({
-        data: {
-          tokenNumber: generateBookingToken(),
-          farmerName: farmer.farmerName || 'Unknown',
-          farmerPhone: farmer.farmerPhone,
-          cropId: crop.id,
-          mandiId: mandi.id,
-          quantityQuintal: Number(args.quantityQuintal),
-          slotDate: new Date(args.slotDate),
-        },
-        include: { crop: true, mandi: true },
+      const result = await createRealBooking({
+        farmerName: farmer.farmerName || 'Unknown',
+        farmerPhone: farmer.farmerPhone,
+        cropId: crop.id,
+        mandiId: args.mandiId,
+        quantityQuintal: args.quantityQuintal,
+        slotDate: args.slotDate,
+        timeSlot: args.timeSlot,
       });
+      if (result.error) return { error: result.error };
 
+      const booking = result.booking;
       return {
         success: true,
         bookingId: booking.id,
@@ -279,6 +336,7 @@ async function runChatbotFunction(name, args, farmer) {
         mandi: booking.mandi.nameEn,
         quantityQuintal: booking.quantityQuintal,
         slotDate: booking.slotDate.toDateString(),
+        timeSlot: booking.timeSlot,
         status: booking.status,
       };
     }
@@ -307,8 +365,13 @@ async function runChatbotFunction(name, args, farmer) {
       }
 
       const waiting = await prisma.booking.findMany({
-        where: { mandiId: booking.mandiId, status: 'CONFIRMED' },
-        orderBy: [{ slotDate: 'asc' }, { createdAt: 'asc' }],
+        where: {
+          mandiId: booking.mandiId,
+          status: 'CONFIRMED',
+          slotDate: booking.slotDate,
+          timeSlot: booking.timeSlot,
+        },
+        orderBy: [{ createdAt: 'asc' }],
       });
       const position = waiting.findIndex((b) => b.id === booking.id) + 1;
 
@@ -489,6 +552,53 @@ app.get('/mandis', async (req, res) => {
   res.json(mandis.map((m) => ({ ...m, farmersWaiting: countByMandi[m.id] || 0 })));
 });
 
+// The real, shared list of bookable time slots - see TIME_SLOTS above.
+app.get('/time-slots', (req, res) => {
+  res.json({ timeSlots: TIME_SLOTS });
+});
+
+// Real, live availability for every time slot at a mandi on a given date -
+// how many farmers are already booked into each slot versus that mandi's
+// real configured capacity, counted straight from the Booking table (any
+// booking that isn't CANCELLED holds its spot). Lets the frontend show
+// farmers which slots are already filling up before they pick one, and is
+// also what the booking form re-checks against just before submitting.
+app.get('/mandis/:id/slots', async (req, res) => {
+  const { date } = req.query;
+  if (!date) {
+    return res.status(400).json({ error: 'date query parameter is required (YYYY-MM-DD)' });
+  }
+
+  const mandi = await prisma.mandi.findUnique({ where: { id: Number(req.params.id) } });
+  if (!mandi) {
+    return res.status(404).json({ error: 'Mandi not found' });
+  }
+
+  const slotDate = new Date(date);
+  const bookedCounts = await prisma.booking.groupBy({
+    by: ['timeSlot'],
+    where: { mandiId: mandi.id, slotDate, status: { not: 'CANCELLED' } },
+    _count: { _all: true },
+  });
+  const bookedByTimeSlot = Object.fromEntries(bookedCounts.map((c) => [c.timeSlot, c._count._all]));
+
+  res.json({
+    mandiId: mandi.id,
+    date,
+    capacityPerSlot: mandi.slotCapacity,
+    slots: TIME_SLOTS.map((timeSlot) => {
+      const booked = bookedByTimeSlot[timeSlot] || 0;
+      return {
+        timeSlot,
+        capacity: mandi.slotCapacity,
+        booked,
+        available: Math.max(mandi.slotCapacity - booked, 0),
+        full: booked >= mandi.slotCapacity,
+      };
+    }),
+  });
+});
+
 async function geocodeLocation(query) {
   const url = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(query)}&limit=1&appid=${process.env.OPENWEATHERMAP_API_KEY}`;
   const geoRes = await fetch(url);
@@ -559,9 +669,20 @@ app.get('/mandis/regions', async (req, res) => {
 });
 
 app.post('/mandis', async (req, res) => {
-  const { nameEn, nameHi, slug, district, state, latitude, longitude } = req.body;
+  const { nameEn, nameHi, slug, district, state, latitude, longitude, slotCapacity } = req.body;
   const mandi = await prisma.mandi.create({
-    data: { nameEn, nameHi, slug, district, state, latitude, longitude },
+    data: {
+      nameEn,
+      nameHi,
+      slug,
+      district,
+      state,
+      latitude,
+      longitude,
+      // Only overrides the schema's real default (20) when a real capacity
+      // was actually provided for this mandi.
+      ...(slotCapacity != null ? { slotCapacity: Number(slotCapacity) } : {}),
+    },
   });
   res.status(201).json(mandi);
 });
@@ -617,7 +738,7 @@ app.post('/chatbot/message', async (req, res) => {
     ? recentBookings
         .map(
           (b) =>
-            `id ${b.id}, token ${b.tokenNumber}: ${b.quantityQuintal} quintals of ${b.crop.nameEn} at ${b.mandi.nameEn}, slot ${b.slotDate.toDateString()}, status ${b.status}`
+            `id ${b.id}, token ${b.tokenNumber}: ${b.quantityQuintal} quintals of ${b.crop.nameEn} at ${b.mandi.nameEn}, ${b.slotDate.toDateString()}${b.timeSlot ? ` (${b.timeSlot})` : ''}, status ${b.status}`
         )
         .join('\n')
     : 'This farmer has no bookings yet.';
@@ -636,8 +757,12 @@ ${mandiList}
 This farmer's real recent bookings:
 ${bookingSummary}
 
+Real bookable time slots (2-hour arrival windows) for any booking date:
+${TIME_SLOTS.join(', ')}
+
 Rules:
-- Never call createBooking until the farmer has clearly confirmed the crop, quantity, mandi, and date in their latest message. Always restate the details first and ask "Shall I confirm this booking?" before calling it.
+- A booking needs a crop, quantity, mandi, date, AND a time slot - time slots exist so farmers don't all show up at once and collide at the gate. Never call createBooking until the farmer has clearly confirmed all five (crop, quantity, mandi, date, time slot) in their latest message. If they haven't picked a time slot yet, ask them to choose one from the list above. Always restate the full details first and ask "Shall I confirm this booking?" before calling createBooking.
+- If createBooking returns an error saying the slot is full, tell the farmer plainly and ask them to pick a different time slot or date - never retry the same slot.
 - If you don't understand the farmer's request or it's outside what you can do, say so honestly and list 2-3 things you can help with instead.
 - Use real ids from the lists above when calling functions.`,
       },
@@ -697,20 +822,14 @@ Rules:
 });
 
 app.post('/bookings', async (req, res) => {
-  const { farmerName, farmerPhone, cropId, mandiId, quantityQuintal, slotDate } = req.body;
-  const booking = await prisma.booking.create({
-    data: {
-      tokenNumber: generateBookingToken(),
-      farmerName,
-      farmerPhone,
-      cropId,
-      mandiId,
-      quantityQuintal,
-      slotDate: new Date(slotDate),
-    },
-    include: { crop: true, mandi: true },
-  });
-  res.status(201).json(booking);
+  const { farmerName, farmerPhone, cropId, mandiId, quantityQuintal, slotDate, timeSlot } = req.body;
+
+  const result = await createRealBooking({ farmerName, farmerPhone, cropId, mandiId, quantityQuintal, slotDate, timeSlot });
+  if (result.error) {
+    const status = result.error === 'Mandi not found' ? 404 : result.error.includes('full') ? 409 : 400;
+    return res.status(status).json({ error: result.error });
+  }
+  res.status(201).json(result.booking);
 });
 
 app.get('/bookings/:id', async (req, res) => {
@@ -739,9 +858,19 @@ app.get('/bookings/:id/queue', async (req, res) => {
     });
   }
 
+  // Scoped to the same mandi, same date, and (for bookings made after time
+  // slots were added) the same time slot - that's the real group of farmers
+  // who'd actually be at the gate together, not every booking ever made at
+  // this mandi. Older, slot-less bookings (timeSlot: null) still group with
+  // each other by date only, same as before this feature existed.
   const waitingBookings = await prisma.booking.findMany({
-    where: { mandiId: booking.mandiId, status: 'CONFIRMED' },
-    orderBy: [{ slotDate: 'asc' }, { createdAt: 'asc' }],
+    where: {
+      mandiId: booking.mandiId,
+      status: 'CONFIRMED',
+      slotDate: booking.slotDate,
+      timeSlot: booking.timeSlot,
+    },
+    orderBy: [{ createdAt: 'asc' }],
   });
 
   const position = waitingBookings.findIndex((b) => b.id === booking.id) + 1;
@@ -750,6 +879,7 @@ app.get('/bookings/:id/queue', async (req, res) => {
     bookingId: booking.id,
     tokenNumber: booking.tokenNumber,
     mandiId: booking.mandiId,
+    timeSlot: booking.timeSlot,
     positionInQueue: position,
     totalWaiting: waitingBookings.length,
     farmersAhead: position - 1,

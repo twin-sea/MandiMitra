@@ -69,6 +69,7 @@
   "modal.bookingDetails.mandiName.label": "मंडी का नाम:",
   "modal.bookingDetails.centreName.label": "सेंसर का नाम:",
   "modal.bookingDetails.date.label": "दिनांक:",
+  "modal.bookingDetails.slot.label": "समय स्लॉट:",
   "modal.confirmBooking.button": "बुकिंग पुष्टि करें!",
   "modal.helpdesk.title": "किसान सहायता केंद्र",
   "helpdesk.freeNumber.label": "निःशुल्क टोल-फ्री नंबर",
@@ -85,7 +86,7 @@
 
   "booking.form.step.crop.label": "1. फसल चुनें (Select Crop):",
   "booking.form.step.centre.label": "2. चयनित खरीद केंद्र (Procurement Centre):",
-  "booking.form.step.slot.label": "3. प्रवेश समय (Slot Time):",
+  "booking.form.step.slot.label": "5. समय स्लॉट चुनें:",
 
   "crops.wheat": "गेहूं (Wheat)",
   "crops.mustard": "सरसों (Mustard)",
@@ -140,8 +141,13 @@
   "yourVehicle.label": "⭐ आपकी गाड़ी:",
 
   "booking.form.step.mandi.label": "2. मंडी चुनें:",
-  "booking.form.step.quantity.label": "4. मात्रा (क्विंटल में):",
-  "booking.form.step.date.label": "5. तिथि चुनें:",
+  "booking.form.step.quantity.label": "3. मात्रा (क्विंटल में):",
+  "booking.form.step.date.label": "4. तिथि चुनें:",
+  "booking.slot.select.placeholder": "समय स्लॉट चुनें",
+  "booking.slot.pickDateFirst": "उपलब्ध समय स्लॉट देखने के लिए पहले तिथि चुनें",
+  "booking.slot.loading": "उपलब्धता जांची जा रही है...",
+  "booking.slot.full": "भरा हुआ",
+  "booking.slot.spotsLeft": "{count} स्थान शेष",
   "booking.validation.required": "कृपया पुष्टि करने से पहले सभी जानकारी भरें।",
   "booking.select.mandi.placeholder": "मंडी चुनें",
   "noActiveBooking.title": "कोई सक्रिय बुकिंग नहीं",

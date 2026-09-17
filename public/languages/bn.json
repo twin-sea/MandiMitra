@@ -68,6 +68,7 @@
   "modal.bookingDetails.mandiName.label": "মান্ডির নাম:",
   "modal.bookingDetails.centreName.label": "কেন্দ্রের নাম:",
   "modal.bookingDetails.date.label": "তারিখ:",
+  "modal.bookingDetails.slot.label": "সময় স্লট:",
   "modal.confirmBooking.button": "বুকিং নিশ্চিত করুন!",
   "modal.helpdesk.title": "কৃষক সহায়তা কেন্দ্র",
   "helpdesk.freeNumber.label": "বিনামূল্যে টোল-ফ্রি নম্বর",
@@ -84,7 +85,7 @@
 
   "booking.form.step.crop.label": "1. ফসল নির্বাচন করুন (Select Crop):",
   "booking.form.step.centre.label": "2. ক্রয় কেন্দ্র (Procurement Centre):",
-  "booking.form.step.slot.label": "3. প্রবেশের সময় (Slot Time):",
+  "booking.form.step.slot.label": "5. সময় স্লট নির্বাচন করুন:",
 
   "crops.wheat": "গম (Wheat)",
   "crops.mustard": "সরিষা (Mustard)",
@@ -139,8 +140,13 @@
   "yourVehicle.label": "⭐ আপনার গাড়ি:",
 
   "booking.form.step.mandi.label": "2. মান্ডি নির্বাচন করুন:",
-  "booking.form.step.quantity.label": "4. পরিমাণ (কুইন্টালে):",
-  "booking.form.step.date.label": "5. তারিখ নির্বাচন করুন:",
+  "booking.form.step.quantity.label": "3. পরিমাণ (কুইন্টালে):",
+  "booking.form.step.date.label": "4. তারিখ নির্বাচন করুন:",
+  "booking.slot.select.placeholder": "সময় স্লট নির্বাচন করুন",
+  "booking.slot.pickDateFirst": "উপলব্ধ সময় স্লট দেখতে প্রথমে তারিখ নির্বাচন করুন",
+  "booking.slot.loading": "প্রাপ্যতা পরীক্ষা করা হচ্ছে...",
+  "booking.slot.full": "পূর্ণ",
+  "booking.slot.spotsLeft": "{count}টি স্থান বাকি",
   "booking.validation.required": "নিশ্চিত করার আগে অনুগ্রহ করে সব তথ্য পূরণ করুন।",
   "booking.select.mandi.placeholder": "একটি মান্ডি নির্বাচন করুন",
   "noActiveBooking.title": "কোনো সক্রিয় বুকিং নেই",

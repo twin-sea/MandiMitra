@@ -6,8 +6,13 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Used only for schema changes (prisma migrate). DATABASE_URL above goes
+  // through Supabase's transaction pooler, which doesn't support the
+  // session-level operations a migration needs (it's why "migrate dev" was
+  // hanging) - directUrl points at a real Supabase connection that does.
+  directUrl = env("DIRECT_URL")
 }
 
 model Farmer {
@@ -40,6 +45,12 @@ model Mandi {
   state     String
    latitude  Float?
   longitude Float?
+  // Real, per-mandi cap on how many farmers can be booked into the same
+  // time slot on the same day, so slots stop filling before mandi staff
+  // are overwhelmed. Configurable per mandi (a small local mandi and a
+  // large central one don't have the same real throughput); starts at a
+  // sensible default of 20 that whoever manages the mandi can adjust.
+  slotCapacity Int     @default(20)
   createdAt DateTime  @default(now())
   bookings  Booking[]
 }
@@ -55,6 +66,11 @@ model Booking {
   mandi           Mandi    @relation(fields: [mandiId], references: [id])
   quantityQuintal Float
   slotDate        DateTime
+  // A real 2-hour arrival window on slotDate, e.g. "06:00-08:00" (see
+  // TIME_SLOTS in server.js). Nullable because bookings made before this
+  // field existed genuinely have no time slot on record - we don't invent
+  // one for them, the app just treats them as date-only, same as before.
+  timeSlot        String?
   status          String   @default("CONFIRMED")
   createdAt       DateTime @default(now())
   grievances      Grievance[]

@@ -68,6 +68,7 @@
   "modal.bookingDetails.mandiName.label": "മണ്ടി പേര്:",
   "modal.bookingDetails.centreName.label": "കേന്ദ്രത്തിന്റെ പേര്:",
   "modal.bookingDetails.date.label": "തീയതി:",
+  "modal.bookingDetails.slot.label": "സമയ സ്ലോട്ട്:",
   "modal.confirmBooking.button": "ബുക്കിംഗ് സ്ഥിരീകരിക്കുക!",
   "modal.helpdesk.title": "കർഷക സഹായ കേന്ദ്രം",
   "helpdesk.freeNumber.label": "സൗജന്യ ടോൾ-ഫ്രീ നമ്പർ",
@@ -84,7 +85,7 @@
 
   "booking.form.step.crop.label": "1. വിള തിരഞ്ഞെടുക്കുക (Select Crop):",
   "booking.form.step.centre.label": "2. സംഭരണ കേന്ദ്രം (Procurement Centre):",
-  "booking.form.step.slot.label": "3. പ്രവേശന സമയം (Slot Time):",
+  "booking.form.step.slot.label": "5. സമയ സ്ലോട്ട് തിരഞ്ഞെടുക്കുക:",
 
   "crops.wheat": "ഗോതമ്പ് (Wheat)",
   "crops.mustard": "കടുക് (Mustard)",
@@ -139,8 +140,13 @@
   "yourVehicle.label": "⭐ നിങ്ങളുടെ വാഹനം:",
 
   "booking.form.step.mandi.label": "2. മണ്ടി തിരഞ്ഞെടുക്കുക:",
-  "booking.form.step.quantity.label": "4. അളവ് (ക്വിന്റലിൽ):",
-  "booking.form.step.date.label": "5. തീയതി തിരഞ്ഞെടുക്കുക:",
+  "booking.form.step.quantity.label": "3. അളവ് (ക്വിന്റലിൽ):",
+  "booking.form.step.date.label": "4. തീയതി തിരഞ്ഞെടുക്കുക:",
+  "booking.slot.select.placeholder": "സമയ സ്ലോട്ട് തിരഞ്ഞെടുക്കുക",
+  "booking.slot.pickDateFirst": "ലഭ്യമായ സമയ സ്ലോട്ടുകൾ കാണാൻ ആദ്യം തീയതി തിരഞ്ഞെടുക്കുക",
+  "booking.slot.loading": "ലഭ്യത പരിശോധിക്കുന്നു...",
+  "booking.slot.full": "നിറഞ്ഞു",
+  "booking.slot.spotsLeft": "{count} സ്ഥലങ്ങൾ ബാക്കി",
   "booking.validation.required": "സ്ഥിരീകരിക്കുന്നതിന് മുമ്പ് ദയവായി എല്ലാ വിവരങ്ങളും പൂരിപ്പിക്കുക.",
   "booking.select.mandi.placeholder": "ഒരു മണ്ടി തിരഞ്ഞെടുക്കുക",
   "noActiveBooking.title": "സജീവ ബുക്കിംഗ് ഇല്ല",

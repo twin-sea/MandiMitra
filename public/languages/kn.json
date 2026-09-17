@@ -68,6 +68,7 @@
   "modal.bookingDetails.mandiName.label": "ಮಂಡಿ ಹೆಸರು:",
   "modal.bookingDetails.centreName.label": "ಕೇಂದ್ರದ ಹೆಸರು:",
   "modal.bookingDetails.date.label": "ದಿನಾಂಕ:",
+  "modal.bookingDetails.slot.label": "ಸಮಯ ಸ್ಲಾಟ್:",
   "modal.confirmBooking.button": "ಬುಕಿಂಗ್ ದೃಢೀಕರಿಸಿ!",
   "modal.helpdesk.title": "ರೈತ ಸಹಾಯವಾಣಿ",
   "helpdesk.freeNumber.label": "ಉಚಿತ ಟೋಲ್-ಫ್ರೀ ಸಂಖ್ಯೆ",
@@ -84,7 +85,7 @@
 
   "booking.form.step.crop.label": "1. ಬೆಳೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ (Select Crop):",
   "booking.form.step.centre.label": "2. ಖರೀದಿ ಕೇಂದ್ರ (Procurement Centre):",
-  "booking.form.step.slot.label": "3. ಪ್ರವೇಶ ಸಮಯ (Slot Time):",
+  "booking.form.step.slot.label": "5. ಸಮಯ ಸ್ಲಾಟ್ ಆಯ್ಕೆಮಾಡಿ:",
 
   "crops.wheat": "ಗೋಧಿ (Wheat)",
   "crops.mustard": "ಸಾಸಿವೆ (Mustard)",
@@ -139,8 +140,13 @@
   "yourVehicle.label": "⭐ ನಿಮ್ಮ ವಾಹನ:",
 
   "booking.form.step.mandi.label": "2. ಮಂಡಿಯನ್ನು ಆಯ್ಕೆಮಾಡಿ:",
-  "booking.form.step.quantity.label": "4. ಪ್ರಮಾಣ (ಕ್ವಿಂಟಲ್‌ಗಳಲ್ಲಿ):",
-  "booking.form.step.date.label": "5. ದಿನಾಂಕವನ್ನು ಆಯ್ಕೆಮಾಡಿ:",
+  "booking.form.step.quantity.label": "3. ಪ್ರಮಾಣ (ಕ್ವಿಂಟಲ್‌ಗಳಲ್ಲಿ):",
+  "booking.form.step.date.label": "4. ದಿನಾಂಕವನ್ನು ಆಯ್ಕೆಮಾಡಿ:",
+  "booking.slot.select.placeholder": "ಸಮಯ ಸ್ಲಾಟ್ ಆಯ್ಕೆಮಾಡಿ",
+  "booking.slot.pickDateFirst": "ಲಭ್ಯವಿರುವ ಸಮಯ ಸ್ಲಾಟ್‌ಗಳನ್ನು ನೋಡಲು ಮೊದಲು ದಿನಾಂಕವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+  "booking.slot.loading": "ಲಭ್ಯತೆ ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ...",
+  "booking.slot.full": "ಭರ್ತಿಯಾಗಿದೆ",
+  "booking.slot.spotsLeft": "{count} ಸ್ಥಳಗಳು ಬಾಕಿ ಇವೆ",
   "booking.validation.required": "ದೃಢೀಕರಿಸುವ ಮೊದಲು ದಯವಿಟ್ಟು ಎಲ್ಲಾ ವಿವರಗಳನ್ನು ಭರ್ತಿ ಮಾಡಿ.",
   "booking.select.mandi.placeholder": "ಒಂದು ಮಂಡಿಯನ್ನು ಆಯ್ಕೆಮಾಡಿ",
   "noActiveBooking.title": "ಯಾವುದೇ ಸಕ್ರಿಯ ಬುಕಿಂಗ್ ಇಲ್ಲ",

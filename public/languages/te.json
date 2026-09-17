@@ -68,6 +68,7 @@
   "modal.bookingDetails.mandiName.label": "మండి పేరు:",
   "modal.bookingDetails.centreName.label": "కేంద్రం పేరు:",
   "modal.bookingDetails.date.label": "తేదీ:",
+  "modal.bookingDetails.slot.label": "సమయ స్లాట్:",
   "modal.confirmBooking.button": "బుకింగ్ నిర్ధారించండి!",
   "modal.helpdesk.title": "రైతు సహాయ కేంద్రం",
   "helpdesk.freeNumber.label": "ఉచిత టోల్-ఫ్రీ నంబర్",
@@ -84,7 +85,7 @@
 
   "booking.form.step.crop.label": "1. పంటను ఎంచుకోండి (Select Crop):",
   "booking.form.step.centre.label": "2. సేకరణ కేంద్రం (Procurement Centre):",
-  "booking.form.step.slot.label": "3. ప్రవేశ సమయం (Slot Time):",
+  "booking.form.step.slot.label": "5. సమయ స్లాట్ ఎంచుకోండి:",
 
   "crops.wheat": "గోధుమ (Wheat)",
   "crops.mustard": "ఆవాలు (Mustard)",
@@ -139,8 +140,13 @@
   "yourVehicle.label": "⭐ మీ వాహనం:",
 
   "booking.form.step.mandi.label": "2. మండిని ఎంచుకోండి:",
-  "booking.form.step.quantity.label": "4. పరిమాణం (క్వింటాళ్లలో):",
-  "booking.form.step.date.label": "5. తేదీని ఎంచుకోండి:",
+  "booking.form.step.quantity.label": "3. పరిమాణం (క్వింటాళ్లలో):",
+  "booking.form.step.date.label": "4. తేదీని ఎంచుకోండి:",
+  "booking.slot.select.placeholder": "సమయ స్లాట్ ఎంచుకోండి",
+  "booking.slot.pickDateFirst": "అందుబాటులో ఉన్న సమయ స్లాట్‌లను చూడటానికి ముందుగా తేదీని ఎంచుకోండి",
+  "booking.slot.loading": "లభ్యత తనిఖీ చేయబడుతోంది...",
+  "booking.slot.full": "నిండింది",
+  "booking.slot.spotsLeft": "{count} స్థానాలు మిగిలి ఉన్నాయి",
   "booking.validation.required": "నిర్ధారించే ముందు దయచేసి అన్ని వివరాలు పూరించండి.",
   "booking.select.mandi.placeholder": "మండిని ఎంచుకోండి",
   "noActiveBooking.title": "క్రియాశీల బుకింగ్ లేదు",

@@ -68,6 +68,7 @@
   "modal.bookingDetails.mandiName.label": "মাণ্ডিৰ নাম:",
   "modal.bookingDetails.centreName.label": "কেন্দ্ৰৰ নাম:",
   "modal.bookingDetails.date.label": "তাৰিখ:",
+  "modal.bookingDetails.slot.label": "সময়ৰ শ্লট:",
   "modal.confirmBooking.button": "বুকিং নিশ্চিত কৰক!",
   "modal.helpdesk.title": "কৃষক হেল্পডেস্ক",
   "helpdesk.freeNumber.label": "বিনামূলীয়া টোল-ফ্ৰী নম্বৰ",
@@ -84,7 +85,7 @@
 
   "booking.form.step.crop.label": "1. শস্য বাছক (Select Crop):",
   "booking.form.step.centre.label": "2. ক্ৰয় কেন্দ্ৰ (Procurement Centre):",
-  "booking.form.step.slot.label": "3. প্ৰৱেশৰ সময় (Slot Time):",
+  "booking.form.step.slot.label": "5. সময়ৰ শ্লট বাছক:",
 
   "crops.wheat": "ঘেঁহু (Wheat)",
   "crops.mustard": "সৰিয়হ (Mustard)",
@@ -139,8 +140,13 @@
   "yourVehicle.label": "⭐ আপোনাৰ গাড়ী:",
 
   "booking.form.step.mandi.label": "2. মাণ্ডি বাছক:",
-  "booking.form.step.quantity.label": "4. পৰিমাণ (কুইণ্টেলত):",
-  "booking.form.step.date.label": "5. তাৰিখ বাছক:",
+  "booking.form.step.quantity.label": "3. পৰিমাণ (কুইণ্টেলত):",
+  "booking.form.step.date.label": "4. তাৰিখ বাছক:",
+  "booking.slot.select.placeholder": "সময়ৰ শ্লট বাছক",
+  "booking.slot.pickDateFirst": "উপলব্ধ সময়ৰ শ্লট চাবলৈ প্ৰথমে তাৰিখ বাছক",
+  "booking.slot.loading": "উপলব্ধতা পৰীক্ষা কৰি থকা হৈছে...",
+  "booking.slot.full": "পূৰ্ণ",
+  "booking.slot.spotsLeft": "{count} টা ঠাই বাকী",
   "booking.validation.required": "নিশ্চিত কৰাৰ আগতে অনুগ্ৰহ কৰি আটাইবোৰ ঘৰ পূৰণ কৰক।",
   "booking.select.mandi.placeholder": "এখন মাণ্ডি বাছক",
   "noActiveBooking.title": "কোনো সক্ৰিয় বুকিং নাই",
