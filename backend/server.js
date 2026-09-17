@@ -823,11 +823,14 @@ Rules:
 
   // gemini-3.6-flash's free tier is capped at just 20 requests/day total
   // (shared across every farmer using this app) - that's what was causing
-  // the "Chatbot service error" for real users. gemini-2.5-flash-lite is a
-  // stable, established model that also supports function calling, with a
-  // free tier around 1,000 requests/day instead - the same real Gemini API,
-  // just a model whose free quota can actually support real usage.
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${process.env.GEMINI_API_KEY}`;
+  // the "Chatbot service error" for real users. gemini-2.5-flash-lite was
+  // tried as a fix but Google's API rejected it outright (404: "no longer
+  // available to new users... update your code to use
+  // models/gemini-3.5-flash-lite") - this key is too new to have grandfathered
+  // access to 2.5-flash-lite. gemini-3.5-flash-lite is Google's own current
+  // recommendation: still supports function calling, with a free tier far
+  // above 3.6-flash's 20/day.
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
   let contents = [...(history || []), { role: 'user', parts: [{ text: message }] }];
   let finalText = null;
