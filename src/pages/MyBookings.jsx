@@ -30,6 +30,30 @@ function formatSlotDate(iso) {
   }
 }
 
+// The QR code used to encode only the token number, so scanning it with an
+// ordinary phone camera or a gate-side QR scanner just showed a short code -
+// useless on its own without a lookup system, which this app doesn't have
+// (there's no staff device connected to the backend at the mandi gate).
+// Encoding the real booking details as plain text instead means scanning
+// the QR shows everything gate staff need - farmer, crops, mandi, date,
+// slot, token - immediately, with no internet connection required.
+function buildPassQrText(booking, farmerName) {
+  const cropLine = (booking.crops || [])
+    .map((bc) => `${bc.crop?.nameEn || 'Crop'} ${bc.quantityQuintal}Q`)
+    .join(', ');
+  const lines = [
+    'MandiMitra Booking Pass',
+    `Token: ${booking.tokenNumber}`,
+    `Farmer: ${farmerName || ''}`,
+    `Crops: ${cropLine}`,
+    `Mandi: ${booking.mandi?.nameEn || ''}`,
+    `Date: ${formatSlotDate(booking.slotDate)}`,
+  ];
+  if (booking.timeSlot) lines.push(`Time Slot: ${booking.timeSlot}`);
+  lines.push(`Status: ${booking.status}`);
+  return lines.join('\n');
+}
+
 function statusStyle(status) {
   switch ((status || '').toUpperCase()) {
     case 'CONFIRMED':
@@ -218,10 +242,10 @@ export function MyBookings() {
                 </div>
 
                 <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
-                    passBooking.tokenNumber
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&ecc=M&data=${encodeURIComponent(
+                    buildPassQrText(passBooking, farmer?.name)
                   )}`}
-                  alt={`QR code for token ${passBooking.tokenNumber}`}
+                  alt={`QR code with full booking details for token ${passBooking.tokenNumber}`}
                   className="mx-auto h-44 w-44 rounded-xl border p-2"
                   width={176}
                   height={176}
