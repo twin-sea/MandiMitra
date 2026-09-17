@@ -84,6 +84,7 @@
   "modal.booking.title.confirm": "বুকিং নিশ্চিত হয়েছে! (Booking Confirmed!)",
 
   "booking.form.step.crop.label": "1. ফসল নির্বাচন করুন (Select Crop):",
+  "booking.crop.multiSelectHint": "আপনি এই একই সফরের জন্য একাধিক ফসল নির্বাচন করতে পারেন।",
   "booking.form.step.centre.label": "2. ক্রয় কেন্দ্র (Procurement Centre):",
   "booking.form.step.slot.label": "5. সময় স্লট নির্বাচন করুন:",
 
@@ -139,8 +140,8 @@
   "status.documentCheck": "(নথি পরীক্ষা)",
   "yourVehicle.label": "⭐ আপনার গাড়ি:",
 
-  "booking.form.step.mandi.label": "2. মান্ডি নির্বাচন করুন:",
-  "booking.form.step.quantity.label": "3. পরিমাণ (কুইন্টালে):",
+  "booking.form.step.mandi.label": "3. মান্ডি নির্বাচন করুন:",
+  "booking.form.step.quantity.label": "2. পরিমাণ (কুইন্টালে):",
   "booking.form.step.date.label": "4. তারিখ নির্বাচন করুন:",
   "booking.slot.select.placeholder": "সময় স্লট নির্বাচন করুন",
   "booking.slot.pickDateFirst": "উপলব্ধ সময় স্লট দেখতে প্রথমে তারিখ নির্বাচন করুন",

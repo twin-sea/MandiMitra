@@ -39,9 +39,12 @@ const FarmerDashboard = () => {
   const [mandisLoading, setMandisLoading] = useState(true);
 
   // --- Real booking form state ---
-  const [selectedCropId, setSelectedCropId] = useState('');
+  // One booking = one real trip to the mandi (one time slot, one queue
+  // spot), so a farmer can add more than one crop to the SAME booking
+  // instead of needing a separate booking (and a separate slot) per crop.
+  // selectedCrops is a real array of { cropId, quantityQuintal }.
+  const [selectedCrops, setSelectedCrops] = useState([]);
   const [selectedMandiId, setSelectedMandiId] = useState('');
-  const [quantity, setQuantity] = useState('');
   const [slotDate, setSlotDate] = useState('');
   const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
   // Real, live per-slot availability for the chosen mandi+date, fetched
@@ -112,15 +115,31 @@ const FarmerDashboard = () => {
 
   const handleStartBooking = (preselectMandiId) => {
     setConfirmedBooking(null);
-    setSelectedCropId('');
+    setSelectedCrops([]);
     setSelectedMandiId(preselectMandiId ? String(preselectMandiId) : '');
-    setQuantity('');
     setSlotDate('');
     setSelectedTimeSlot('');
     setSlotAvailability(null);
     setSlotAvailabilityError('');
     setSubmitError('');
     setShowBookingModal(true);
+  };
+
+  // Adds/removes a crop from this booking, and lets its quantity be edited
+  // once it's added. A farmer selling wheat AND mustard on the same trip
+  // just toggles both crops on and fills in a quantity for each.
+  const toggleCrop = (cropId) => {
+    setSelectedCrops((prev) => {
+      const exists = prev.some((c) => String(c.cropId) === String(cropId));
+      if (exists) return prev.filter((c) => String(c.cropId) !== String(cropId));
+      return [...prev, { cropId, quantityQuintal: '' }];
+    });
+  };
+
+  const setCropQuantity = (cropId, value) => {
+    setSelectedCrops((prev) =>
+      prev.map((c) => (String(c.cropId) === String(cropId) ? { ...c, quantityQuintal: value } : c))
+    );
   };
 
   // Once a mandi and a date are both picked, fetch the real, live
@@ -153,7 +172,9 @@ const FarmerDashboard = () => {
 
   const handleConfirmBooking = async () => {
     setSubmitError('');
-    if (!selectedCropId || !selectedMandiId || !quantity || !slotDate || !selectedTimeSlot) {
+    const hasValidCrops =
+      selectedCrops.length > 0 && selectedCrops.every((c) => c.quantityQuintal && Number(c.quantityQuintal) > 0);
+    if (!hasValidCrops || !selectedMandiId || !slotDate || !selectedTimeSlot) {
       setSubmitError(t('booking.validation.required'));
       return;
     }
@@ -162,9 +183,8 @@ const FarmerDashboard = () => {
       const booking = await createBooking({
         farmerName: farmer.name,
         farmerPhone: farmer.phone,
-        cropId: Number(selectedCropId),
+        crops: selectedCrops.map((c) => ({ cropId: Number(c.cropId), quantityQuintal: Number(c.quantityQuintal) })),
         mandiId: Number(selectedMandiId),
-        quantityQuintal: Number(quantity),
         slotDate,
         timeSlot: selectedTimeSlot,
       });
@@ -315,10 +335,12 @@ const FarmerDashboard = () => {
                   </div>
                   <div>
                     <div className="font-bold text-lg text-foreground">
-                      {currentBooking.crop?.nameEn} ({currentBooking.crop?.nameHi})
+                      {(currentBooking.crops || []).map((bc) => bc.crop?.nameEn).join(', ')}
                     </div>
                     <div className="text-xs sm:text-sm text-muted-foreground font-medium">
-                      {t('booking.quantity.label')} <strong>{currentBooking.quantityQuintal} Quintals</strong>
+                      {(currentBooking.crops || [])
+                        .map((bc) => `${bc.quantityQuintal} Q ${bc.crop?.nameEn}`)
+                        .join(' + ')}
                     </div>
                   </div>
                 </div>
@@ -532,29 +554,60 @@ const FarmerDashboard = () => {
                     <label className="text-xs font-bold text-foreground block mb-1.5">
                       {t('booking.form.step.crop.label')}
                     </label>
+                    <p className="text-[11px] text-muted-foreground mb-1.5">{t('booking.crop.multiSelectHint')}</p>
                     {cropsLoading ? (
                       <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                         <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t('loading.crops')}
                       </p>
                     ) : (
                       <div className="grid grid-cols-2 gap-2">
-                        {crops.map((crop) => (
-                          <button
-                            key={crop.id}
-                            type="button"
-                            onClick={() => setSelectedCropId(crop.id)}
-                            className={`p-3 rounded-xl border text-left text-sm font-semibold transition-all min-h-[46px] cursor-pointer ${
-                              String(selectedCropId) === String(crop.id)
-                                ? 'border-primary bg-accent text-accent-foreground ring-2 ring-primary/30 font-bold'
-                                : 'border-border hover:bg-accent text-foreground'
-                            }`}
-                          >
-                            {crop.nameEn} ({crop.nameHi})
-                          </button>
-                        ))}
+                        {crops.map((crop) => {
+                          const isSelected = selectedCrops.some((c) => String(c.cropId) === String(crop.id));
+                          return (
+                            <button
+                              key={crop.id}
+                              type="button"
+                              onClick={() => toggleCrop(crop.id)}
+                              className={`p-3 rounded-xl border text-left text-sm font-semibold transition-all min-h-[46px] cursor-pointer ${
+                                isSelected
+                                  ? 'border-primary bg-accent text-accent-foreground ring-2 ring-primary/30 font-bold'
+                                  : 'border-border hover:bg-accent text-foreground'
+                              }`}
+                            >
+                              {crop.nameEn} ({crop.nameHi})
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
+
+                  {selectedCrops.length > 0 && (
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-foreground block mb-1.5">
+                        {t('booking.form.step.quantity.label')}
+                      </label>
+                      {selectedCrops.map((sc) => {
+                        const crop = crops.find((c) => String(c.id) === String(sc.cropId));
+                        return (
+                          <div key={sc.cropId} className="flex items-center gap-2">
+                            <span className="flex-1 text-sm font-semibold text-foreground truncate">
+                              {crop ? `${crop.nameEn} (${crop.nameHi})` : sc.cropId}
+                            </span>
+                            <input
+                              type="number"
+                              min="1"
+                              step="0.1"
+                              value={sc.quantityQuintal}
+                              onChange={(e) => setCropQuantity(sc.cropId, e.target.value)}
+                              placeholder="e.g. 40"
+                              className="w-28 p-2.5 rounded-xl border bg-background text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
 
                   <div>
                     <label className="text-xs font-bold text-foreground block mb-1.5">
@@ -580,21 +633,6 @@ const FarmerDashboard = () => {
                         ))}
                       </select>
                     )}
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-foreground block mb-1.5">
-                      {t('booking.form.step.quantity.label')}
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      step="0.1"
-                      value={quantity}
-                      onChange={(e) => setQuantity(e.target.value)}
-                      placeholder="e.g. 40"
-                      className="w-full p-3 rounded-xl border bg-background text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
                   </div>
 
                   <div>
@@ -681,7 +719,10 @@ const FarmerDashboard = () => {
                   </div>
                   <div className="bg-muted p-4 rounded-xl text-left text-xs space-y-2">
                     <div>
-                      <strong>{t('modal.bookingDetails.crop.label')}</strong> {confirmedBooking.crop?.nameEn} ({confirmedBooking.crop?.nameHi})
+                      <strong>{t('modal.bookingDetails.crop.label')}</strong>{' '}
+                      {(confirmedBooking.crops || [])
+                        .map((bc) => `${bc.crop?.nameEn} (${bc.quantityQuintal} Q)`)
+                        .join(', ')}
                     </div>
                     <div>
                       <strong>{t('modal.bookingDetails.centreName.label')}</strong> {confirmedBooking.mandi?.nameEn} ({confirmedBooking.mandi?.nameHi})

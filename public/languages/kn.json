@@ -84,6 +84,7 @@
   "modal.booking.title.confirm": "ಬುಕಿಂಗ್ ದೃಢಪಡಿಸಲಾಗಿದೆ! (Booking Confirmed!)",
 
   "booking.form.step.crop.label": "1. ಬೆಳೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ (Select Crop):",
+  "booking.crop.multiSelectHint": "ಇದೇ ಪ್ರಯಾಣಕ್ಕಾಗಿ ನೀವು ಒಂದಕ್ಕಿಂತ ಹೆಚ್ಚು ಬೆಳೆಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಬಹುದು.",
   "booking.form.step.centre.label": "2. ಖರೀದಿ ಕೇಂದ್ರ (Procurement Centre):",
   "booking.form.step.slot.label": "5. ಸಮಯ ಸ್ಲಾಟ್ ಆಯ್ಕೆಮಾಡಿ:",
 
@@ -139,8 +140,8 @@
   "status.documentCheck": "(ದಾಖಲೆ ಪರಿಶೀಲನೆ)",
   "yourVehicle.label": "⭐ ನಿಮ್ಮ ವಾಹನ:",
 
-  "booking.form.step.mandi.label": "2. ಮಂಡಿಯನ್ನು ಆಯ್ಕೆಮಾಡಿ:",
-  "booking.form.step.quantity.label": "3. ಪ್ರಮಾಣ (ಕ್ವಿಂಟಲ್‌ಗಳಲ್ಲಿ):",
+  "booking.form.step.mandi.label": "3. ಮಂಡಿಯನ್ನು ಆಯ್ಕೆಮಾಡಿ:",
+  "booking.form.step.quantity.label": "2. ಪ್ರಮಾಣ (ಕ್ವಿಂಟಲ್‌ಗಳಲ್ಲಿ):",
   "booking.form.step.date.label": "4. ದಿನಾಂಕವನ್ನು ಆಯ್ಕೆಮಾಡಿ:",
   "booking.slot.select.placeholder": "ಸಮಯ ಸ್ಲಾಟ್ ಆಯ್ಕೆಮಾಡಿ",
   "booking.slot.pickDateFirst": "ಲಭ್ಯವಿರುವ ಸಮಯ ಸ್ಲಾಟ್‌ಗಳನ್ನು ನೋಡಲು ಮೊದಲು ದಿನಾಂಕವನ್ನು ಆಯ್ಕೆಮಾಡಿ",

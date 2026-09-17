@@ -6,12 +6,13 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  // Used only for schema changes (prisma migrate). DATABASE_URL above goes
-  // through Supabase's transaction pooler, which doesn't support the
-  // session-level operations a migration needs (it's why "migrate dev" was
-  // hanging) - directUrl points at a real Supabase connection that does.
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // Used only by the Prisma CLI (migrate commands), never by the running
+  // app. DATABASE_URL goes through Supabase's transaction-mode pooler,
+  // which doesn't reliably support the database lock migrations take out
+  // (that's why migrate commands were hanging intermittently) - directUrl
+  // points migrations at the session pooler instead, which does.
   directUrl = env("DIRECT_URL")
 }
 
@@ -33,7 +34,7 @@ model Crop {
   slug          String    @unique
   mspPerQuintal Float?
   createdAt     DateTime  @default(now())
-  bookings      Booking[]
+  bookingCrops  BookingCrop[]
 }
 
 model Mandi {
@@ -55,16 +56,20 @@ model Mandi {
   bookings  Booking[]
 }
 
+// One Booking is one real trip to the mandi: one time slot, one spot in the
+// real queue - regardless of how many different crops the farmer is
+// bringing that trip. Each crop+quantity the farmer is selling in that same
+// trip is its own BookingCrop row below, so a farmer with wheat AND mustard
+// to sell books ONE slot for both instead of needing two separate bookings
+// (which used to cost them two queue spots and two trips through the form
+// for what is really a single real visit to the mandi).
 model Booking {
   id              Int      @id @default(autoincrement())
   tokenNumber     String   @unique
   farmerName      String
   farmerPhone     String
-  cropId          Int
-  crop            Crop     @relation(fields: [cropId], references: [id])
   mandiId         Int
   mandi           Mandi    @relation(fields: [mandiId], references: [id])
-  quantityQuintal Float
   slotDate        DateTime
   // A real 2-hour arrival window on slotDate, e.g. "06:00-08:00" (see
   // TIME_SLOTS in server.js). Nullable because bookings made before this
@@ -73,7 +78,20 @@ model Booking {
   timeSlot        String?
   status          String   @default("CONFIRMED")
   createdAt       DateTime @default(now())
+  crops           BookingCrop[]
   grievances      Grievance[]
+}
+
+// One crop+quantity line within a real booking. A booking with one crop has
+// exactly one of these (that's still the common case); a booking with
+// several crops has one row per crop.
+model BookingCrop {
+  id              Int      @id @default(autoincrement())
+  bookingId       Int
+  booking         Booking  @relation(fields: [bookingId], references: [id])
+  cropId          Int
+  crop            Crop     @relation(fields: [cropId], references: [id])
+  quantityQuintal Float
 }
 model Grievance {
   id           Int      @id @default(autoincrement())

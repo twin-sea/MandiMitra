@@ -84,6 +84,7 @@
   "modal.booking.title.confirm": "బుకింగ్ నిర్ధారించబడింది! (Booking Confirmed!)",
 
   "booking.form.step.crop.label": "1. పంటను ఎంచుకోండి (Select Crop):",
+  "booking.crop.multiSelectHint": "మీరు ఈ ట్రిప్ కోసం ఒకటి కంటే ఎక్కువ పంటలను ఎంచుకోవచ్చు.",
   "booking.form.step.centre.label": "2. సేకరణ కేంద్రం (Procurement Centre):",
   "booking.form.step.slot.label": "5. సమయ స్లాట్ ఎంచుకోండి:",
 
@@ -139,8 +140,8 @@
   "status.documentCheck": "(డాక్యుమెంట్ తనిఖీ)",
   "yourVehicle.label": "⭐ మీ వాహనం:",
 
-  "booking.form.step.mandi.label": "2. మండిని ఎంచుకోండి:",
-  "booking.form.step.quantity.label": "3. పరిమాణం (క్వింటాళ్లలో):",
+  "booking.form.step.mandi.label": "3. మండిని ఎంచుకోండి:",
+  "booking.form.step.quantity.label": "2. పరిమాణం (క్వింటాళ్లలో):",
   "booking.form.step.date.label": "4. తేదీని ఎంచుకోండి:",
   "booking.slot.select.placeholder": "సమయ స్లాట్ ఎంచుకోండి",
   "booking.slot.pickDateFirst": "అందుబాటులో ఉన్న సమయ స్లాట్‌లను చూడటానికి ముందుగా తేదీని ఎంచుకోండి",

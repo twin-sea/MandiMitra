@@ -85,6 +85,7 @@
   "modal.booking.title.confirm": "बुकिंग पुष्टी झाली! (Booking Confirmed!)",
 
   "booking.form.step.crop.label": "1. फसल निवडा (Select Crop):",
+  "booking.crop.multiSelectHint": "तुम्ही याच फेरीसाठी एकापेक्षा जास्त पिके निवडू शकता.",
   "booking.form.step.centre.label": "2. खरेदी केंद्र (Procurement Centre):",
   "booking.form.step.slot.label": "5. वेळ स्लॉट निवडा:",
 
@@ -140,8 +141,8 @@
   "status.documentCheck": "(कागदपत्र तपासणी)",
   "yourVehicle.label": "⭐ तुमचे वाहन:",
 
-  "booking.form.step.mandi.label": "2. मंडी निवडा:",
-  "booking.form.step.quantity.label": "3. प्रमाण (क्विंटलमध्ये):",
+  "booking.form.step.mandi.label": "3. मंडी निवडा:",
+  "booking.form.step.quantity.label": "2. प्रमाण (क्विंटलमध्ये):",
   "booking.form.step.date.label": "4. तारीख निवडा:",
   "booking.slot.select.placeholder": "वेळ स्लॉट निवडा",
   "booking.slot.pickDateFirst": "उपलब्ध वेळ स्लॉट पाहण्यासाठी आधी तारीख निवडा",

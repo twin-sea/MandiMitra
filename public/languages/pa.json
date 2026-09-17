@@ -84,6 +84,7 @@
   "modal.booking.title.confirm": "ਬੁਕਿੰਗ ਪੱਕੀ ਹੋ ਗਈ! (Booking Confirmed!)",
 
   "booking.form.step.crop.label": "1. ਫਸਲ ਚੁਣੋ (Select Crop):",
+  "booking.crop.multiSelectHint": "ਤੁਸੀਂ ਇਸੇ ਫੇਰੀ ਲਈ ਇੱਕ ਤੋਂ ਵੱਧ ਫਸਲਾਂ ਚੁਣ ਸਕਦੇ ਹੋ।",
   "booking.form.step.centre.label": "2. ਖਰੀਦ ਕੇਂਦਰ (Procurement Centre):",
   "booking.form.step.slot.label": "5. ਸਮਾਂ ਸਲਾਟ ਚੁਣੋ:",
 
@@ -139,8 +140,8 @@
   "status.documentCheck": "(ਦਸਤਾਵੇਜ਼ ਜਾਂਚ)",
   "yourVehicle.label": "⭐ ਤੁਹਾਡਾ ਵਾਹਨ:",
 
-  "booking.form.step.mandi.label": "2. ਮੰਡੀ ਚੁਣੋ:",
-  "booking.form.step.quantity.label": "3. ਮਾਤਰਾ (ਕੁਇੰਟਲਾਂ ਵਿੱਚ):",
+  "booking.form.step.mandi.label": "3. ਮੰਡੀ ਚੁਣੋ:",
+  "booking.form.step.quantity.label": "2. ਮਾਤਰਾ (ਕੁਇੰਟਲਾਂ ਵਿੱਚ):",
   "booking.form.step.date.label": "4. ਮਿਤੀ ਚੁਣੋ:",
   "booking.slot.select.placeholder": "ਸਮਾਂ ਸਲਾਟ ਚੁਣੋ",
   "booking.slot.pickDateFirst": "ਉਪਲਬਧ ਸਮਾਂ ਸਲਾਟ ਦੇਖਣ ਲਈ ਪਹਿਲਾਂ ਮਿਤੀ ਚੁਣੋ",

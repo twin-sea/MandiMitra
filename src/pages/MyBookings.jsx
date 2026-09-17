@@ -130,11 +130,12 @@ export function MyBookings() {
                       </div>
                       <div>
                         <p className="font-bold text-foreground">
-                          {b.crop?.nameEn}
-                          {b.crop?.nameHi ? ` (${b.crop.nameHi})` : ''}
+                          {(b.crops || []).map((bc) => bc.crop?.nameEn).join(', ')}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {b.quantityQuintal} Quintals
+                          {(b.crops || [])
+                            .map((bc) => `${bc.quantityQuintal} Q ${bc.crop?.nameEn}`)
+                            .join(' + ')}
                         </p>
                       </div>
                     </div>
@@ -238,7 +239,9 @@ export function MyBookings() {
                   <p>
                     <span className="text-muted-foreground">Crop: </span>
                     <span className="font-semibold text-foreground">
-                      {passBooking.crop?.nameEn} ({passBooking.crop?.nameHi})
+                      {(passBooking.crops || [])
+                        .map((bc) => `${bc.crop?.nameEn} (${bc.quantityQuintal}Q)`)
+                        .join(', ')}
                     </span>
                   </p>
                   <p>

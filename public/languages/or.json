@@ -84,6 +84,7 @@
   "modal.booking.title.confirm": "ବୁକିଂ ନିଶ୍ଚିତ ହେଲା! (Booking Confirmed!)",
 
   "booking.form.step.crop.label": "1. ଫସଲ ବାଛନ୍ତୁ (Select Crop):",
+  "booking.crop.multiSelectHint": "ଆପଣ ଏହି ସମାନ ଯାତ୍ରା ପାଇଁ ଏକରୁ ଅଧିକ ଫସଲ ବାଛି ପାରିବେ।",
   "booking.form.step.centre.label": "2. କ୍ରୟ କେନ୍ଦ୍ର (Procurement Centre):",
   "booking.form.step.slot.label": "5. ସମୟ ସ୍ଲଟ ବାଛନ୍ତୁ:",
 
@@ -139,8 +140,8 @@
   "status.documentCheck": "(ଡକ୍ୟୁମେଣ୍ଟ ଯାଞ୍ଚ)",
   "yourVehicle.label": "⭐ ଆପଣଙ୍କ ଗାଡ଼ି:",
 
-  "booking.form.step.mandi.label": "2. ମଣ୍ଡି ବାଛନ୍ତୁ:",
-  "booking.form.step.quantity.label": "3. ପରିମାଣ (କ୍ୱିଣ୍ଟାଲରେ):",
+  "booking.form.step.mandi.label": "3. ମଣ୍ଡି ବାଛନ୍ତୁ:",
+  "booking.form.step.quantity.label": "2. ପରିମାଣ (କ୍ୱିଣ୍ଟାଲରେ):",
   "booking.form.step.date.label": "4. ତାରିଖ ବାଛନ୍ତୁ:",
   "booking.slot.select.placeholder": "ସମୟ ସ୍ଲଟ ବାଛନ୍ତୁ",
   "booking.slot.pickDateFirst": "ଉପଲବ୍ଧ ସମୟ ସ୍ଲଟ ଦେଖିବାକୁ ପ୍ରଥମେ ତାରିଖ ବାଛନ୍ତୁ",

@@ -84,6 +84,7 @@
   "modal.booking.title.confirm": "முன்பதிவு உறுதி செய்யப்பட்டது! (Booking Confirmed!)",
 
   "booking.form.step.crop.label": "1. பயிரைத் தேர்ந்தெடுக்கவும் (Select Crop):",
+  "booking.crop.multiSelectHint": "இதே பயணத்திற்கு நீங்கள் ஒன்றுக்கு மேற்பட்ட பயிர்களைத் தேர்ந்தெடுக்கலாம்.",
   "booking.form.step.centre.label": "2. கொள்முதல் மையம் (Procurement Centre):",
   "booking.form.step.slot.label": "5. நேர இடைவெளியைத் தேர்ந்தெடுக்கவும்:",
 
@@ -139,8 +140,8 @@
   "status.documentCheck": "(ஆவண சரிபார்ப்பு)",
   "yourVehicle.label": "⭐ உங்கள் வாகனம்:",
 
-  "booking.form.step.mandi.label": "2. மண்டியைத் தேர்ந்தெடுக்கவும்:",
-  "booking.form.step.quantity.label": "3. அளவு (குயிண்டாலில்):",
+  "booking.form.step.mandi.label": "3. மண்டியைத் தேர்ந்தெடுக்கவும்:",
+  "booking.form.step.quantity.label": "2. அளவு (குயிண்டாலில்):",
   "booking.form.step.date.label": "4. தேதியைத் தேர்ந்தெடுக்கவும்:",
   "booking.slot.select.placeholder": "நேர இடைவெளியைத் தேர்ந்தெடுக்கவும்",
   "booking.slot.pickDateFirst": "கிடைக்கும் நேர இடைவெளிகளைக் காண முதலில் தேதியைத் தேர்ந்தெடுக்கவும்",

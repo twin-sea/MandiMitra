@@ -84,7 +84,7 @@ export function TrackQueue() {
               >
                 {bookings.map((b) => (
                   <option key={b.id} value={b.id}>
-                    {b.crop?.nameEn} · {b.mandi?.nameEn} · {b.tokenNumber}
+                    {(b.crops || []).map((bc) => bc.crop?.nameEn).join(', ')} · {b.mandi?.nameEn} · {b.tokenNumber}
                   </option>
                 ))}
               </select>

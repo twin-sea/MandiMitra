@@ -84,6 +84,7 @@
   "modal.booking.title.confirm": "ബുക്കിംഗ് സ്ഥിരീകരിച്ചു! (Booking Confirmed!)",
 
   "booking.form.step.crop.label": "1. വിള തിരഞ്ഞെടുക്കുക (Select Crop):",
+  "booking.crop.multiSelectHint": "ഇതേ യാത്രയ്ക്കായി നിങ്ങൾക്ക് ഒന്നിലധികം വിളകൾ തിരഞ്ഞെടുക്കാം.",
   "booking.form.step.centre.label": "2. സംഭരണ കേന്ദ്രം (Procurement Centre):",
   "booking.form.step.slot.label": "5. സമയ സ്ലോട്ട് തിരഞ്ഞെടുക്കുക:",
 
@@ -139,8 +140,8 @@
   "status.documentCheck": "(രേഖ പരിശോധന)",
   "yourVehicle.label": "⭐ നിങ്ങളുടെ വാഹനം:",
 
-  "booking.form.step.mandi.label": "2. മണ്ടി തിരഞ്ഞെടുക്കുക:",
-  "booking.form.step.quantity.label": "3. അളവ് (ക്വിന്റലിൽ):",
+  "booking.form.step.mandi.label": "3. മണ്ടി തിരഞ്ഞെടുക്കുക:",
+  "booking.form.step.quantity.label": "2. അളവ് (ക്വിന്റലിൽ):",
   "booking.form.step.date.label": "4. തീയതി തിരഞ്ഞെടുക്കുക:",
   "booking.slot.select.placeholder": "സമയ സ്ലോട്ട് തിരഞ്ഞെടുക്കുക",
   "booking.slot.pickDateFirst": "ലഭ്യമായ സമയ സ്ലോട്ടുകൾ കാണാൻ ആദ്യം തീയതി തിരഞ്ഞെടുക്കുക",

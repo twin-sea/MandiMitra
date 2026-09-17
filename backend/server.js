@@ -42,14 +42,33 @@ function generateBookingToken() {
 // function so both go through the exact same real validation and slot
 // capacity check - one farmer can't get a seat the other can't, whichever
 // way they booked.
-async function createRealBooking({ farmerName, farmerPhone, cropId, mandiId, quantityQuintal, slotDate, timeSlot }) {
+// crops is a real array of { cropId, quantityQuintal } - one booking can now
+// carry several crops from the same real trip to the mandi (one time slot,
+// one queue spot), instead of a farmer needing a separate booking - and a
+// separate slot - for each crop they're bringing that day.
+async function createRealBooking({ farmerName, farmerPhone, mandiId, crops, slotDate, timeSlot }) {
   if (!timeSlot || !TIME_SLOTS.includes(timeSlot)) {
     return { error: `Please choose a valid time slot. Must be one of: ${TIME_SLOTS.join(', ')}` };
+  }
+
+  if (!Array.isArray(crops) || crops.length === 0) {
+    return { error: 'Please add at least one crop with a quantity.' };
+  }
+  for (const c of crops) {
+    if (!c || !c.cropId || !c.quantityQuintal || Number(c.quantityQuintal) <= 0) {
+      return { error: 'Each crop needs a valid id and a quantity greater than 0.' };
+    }
   }
 
   const mandi = await prisma.mandi.findUnique({ where: { id: Number(mandiId) } });
   if (!mandi) {
     return { error: 'Mandi not found' };
+  }
+
+  const cropIds = crops.map((c) => Number(c.cropId));
+  const realCrops = await prisma.crop.findMany({ where: { id: { in: cropIds } } });
+  if (realCrops.length !== new Set(cropIds).size) {
+    return { error: 'One or more crop ids are invalid.' };
   }
 
   const normalizedSlotDate = new Date(slotDate);
@@ -66,13 +85,14 @@ async function createRealBooking({ farmerName, farmerPhone, cropId, mandiId, qua
       tokenNumber: generateBookingToken(),
       farmerName,
       farmerPhone,
-      cropId: Number(cropId),
       mandiId: mandi.id,
-      quantityQuintal: Number(quantityQuintal),
       slotDate: normalizedSlotDate,
       timeSlot,
+      crops: {
+        create: crops.map((c) => ({ cropId: Number(c.cropId), quantityQuintal: Number(c.quantityQuintal) })),
+      },
     },
-    include: { crop: true, mandi: true },
+    include: { crops: { include: { crop: true } }, mandi: true },
   });
 
   return { booking };
@@ -221,20 +241,30 @@ const CHATBOT_TOOLS = [
       {
         name: 'createBooking',
         description:
-          "Create a real mandi slot booking for the current farmer. Only call this AFTER the farmer has explicitly confirmed the crop, quantity, mandi, and date in their most recent message.",
+          "Create a real mandi slot booking for the current farmer - one booking is one trip/one time slot, and can cover MULTIPLE crops the farmer is bringing that same trip. Only call this AFTER the farmer has explicitly confirmed every crop+quantity, the mandi, the date, and the time slot in their most recent message.",
         parameters: {
           type: 'object',
           properties: {
-            cropId: { type: 'number', description: 'The id of the crop, from the crop list given in context.' },
+            crops: {
+              type: 'array',
+              description: 'One entry per crop the farmer is bringing on this same trip. A farmer selling only one crop still passes an array with one entry.',
+              items: {
+                type: 'object',
+                properties: {
+                  cropId: { type: 'number', description: 'The id of the crop, from the crop list given in context.' },
+                  quantityQuintal: { type: 'number', description: 'Quantity of this crop in quintals.' },
+                },
+                required: ['cropId', 'quantityQuintal'],
+              },
+            },
             mandiId: { type: 'number', description: 'The id of the mandi, from the mandi list given in context.' },
-            quantityQuintal: { type: 'number', description: 'Quantity in quintals.' },
             slotDate: { type: 'string', description: 'Date in YYYY-MM-DD format.' },
             timeSlot: {
               type: 'string',
               description: `A real 2-hour arrival window on slotDate. Must be exactly one of: ${TIME_SLOTS.join(', ')}.`,
             },
           },
-          required: ['cropId', 'mandiId', 'quantityQuintal', 'slotDate', 'timeSlot'],
+          required: ['crops', 'mandiId', 'slotDate', 'timeSlot'],
         },
       },
       {
@@ -313,15 +343,11 @@ const CHATBOT_TOOLS = [
 async function runChatbotFunction(name, args, farmer) {
   try {
     if (name === 'createBooking') {
-      const crop = await prisma.crop.findUnique({ where: { id: Number(args.cropId) } });
-      if (!crop) return { error: 'Invalid crop id' };
-
       const result = await createRealBooking({
         farmerName: farmer.farmerName || 'Unknown',
         farmerPhone: farmer.farmerPhone,
-        cropId: crop.id,
         mandiId: args.mandiId,
-        quantityQuintal: args.quantityQuintal,
+        crops: args.crops,
         slotDate: args.slotDate,
         timeSlot: args.timeSlot,
       });
@@ -332,9 +358,8 @@ async function runChatbotFunction(name, args, farmer) {
         success: true,
         bookingId: booking.id,
         tokenNumber: booking.tokenNumber,
-        crop: booking.crop.nameEn,
+        crops: booking.crops.map((bc) => ({ crop: bc.crop.nameEn, quantityQuintal: bc.quantityQuintal })),
         mandi: booking.mandi.nameEn,
-        quantityQuintal: booking.quantityQuintal,
         slotDate: booking.slotDate.toDateString(),
         timeSlot: booking.timeSlot,
         status: booking.status,
@@ -344,13 +369,13 @@ async function runChatbotFunction(name, args, farmer) {
     if (name === 'checkBookingStatus') {
       const booking = await prisma.booking.findUnique({
         where: { id: Number(args.bookingId) },
-        include: { crop: true, mandi: true },
+        include: { crops: { include: { crop: true } }, mandi: true },
       });
       if (!booking) return { error: 'Booking not found' };
       return {
         bookingId: booking.id,
         tokenNumber: booking.tokenNumber,
-        crop: booking.crop.nameEn,
+        crops: booking.crops.map((bc) => ({ crop: bc.crop.nameEn, quantityQuintal: bc.quantityQuintal })),
         mandi: booking.mandi.nameEn,
         status: booking.status,
       };
@@ -729,7 +754,7 @@ app.post('/chatbot/message', async (req, res) => {
 
   const recentBookings = await prisma.booking.findMany({
     where: { farmerPhone },
-    include: { crop: true, mandi: true },
+    include: { crops: { include: { crop: true } }, mandi: true },
     orderBy: { createdAt: 'desc' },
     take: 5,
   });
@@ -738,7 +763,7 @@ app.post('/chatbot/message', async (req, res) => {
     ? recentBookings
         .map(
           (b) =>
-            `id ${b.id}, token ${b.tokenNumber}: ${b.quantityQuintal} quintals of ${b.crop.nameEn} at ${b.mandi.nameEn}, ${b.slotDate.toDateString()}${b.timeSlot ? ` (${b.timeSlot})` : ''}, status ${b.status}`
+            `id ${b.id}, token ${b.tokenNumber}: ${b.crops.map((bc) => `${bc.quantityQuintal} quintals of ${bc.crop.nameEn}`).join(' + ')} at ${b.mandi.nameEn}, ${b.slotDate.toDateString()}${b.timeSlot ? ` (${b.timeSlot})` : ''}, status ${b.status}`
         )
         .join('\n')
     : 'This farmer has no bookings yet.';
@@ -761,7 +786,7 @@ Real bookable time slots (2-hour arrival windows) for any booking date:
 ${TIME_SLOTS.join(', ')}
 
 Rules:
-- A booking needs a crop, quantity, mandi, date, AND a time slot - time slots exist so farmers don't all show up at once and collide at the gate. Never call createBooking until the farmer has clearly confirmed all five (crop, quantity, mandi, date, time slot) in their latest message. If they haven't picked a time slot yet, ask them to choose one from the list above. Always restate the full details first and ask "Shall I confirm this booking?" before calling createBooking.
+- A booking needs one or more crops (each with its own quantity), a mandi, a date, AND a time slot - time slots exist so farmers don't all show up at once and collide at the gate. One booking = one real trip to the mandi, so if a farmer mentions selling more than one crop on the same visit, put ALL of those crops into the SAME createBooking call (its "crops" argument takes a list) instead of calling createBooking separately for each crop - a separate call would wrongly cost them a separate queue spot for what is really one trip. Never call createBooking until the farmer has clearly confirmed every crop+quantity, the mandi, the date, and the time slot in their latest message. If they haven't picked a time slot yet, ask them to choose one from the list above. Always restate the full details first and ask "Shall I confirm this booking?" before calling createBooking.
 - If createBooking returns an error saying the slot is full, tell the farmer plainly and ask them to pick a different time slot or date - never retry the same slot.
 - If you don't understand the farmer's request or it's outside what you can do, say so honestly and list 2-3 things you can help with instead.
 - Use real ids from the lists above when calling functions.`,
@@ -822,9 +847,17 @@ Rules:
 });
 
 app.post('/bookings', async (req, res) => {
-  const { farmerName, farmerPhone, cropId, mandiId, quantityQuintal, slotDate, timeSlot } = req.body;
+  const { farmerName, farmerPhone, mandiId, slotDate, timeSlot } = req.body;
+  // Accepts the real multi-crop shape ({ crops: [{cropId, quantityQuintal}, ...] })
+  // and also the older single-crop shape ({ cropId, quantityQuintal }) so
+  // nothing that hasn't been updated yet breaks.
+  const crops = Array.isArray(req.body.crops)
+    ? req.body.crops
+    : req.body.cropId
+    ? [{ cropId: req.body.cropId, quantityQuintal: req.body.quantityQuintal }]
+    : [];
 
-  const result = await createRealBooking({ farmerName, farmerPhone, cropId, mandiId, quantityQuintal, slotDate, timeSlot });
+  const result = await createRealBooking({ farmerName, farmerPhone, mandiId, crops, slotDate, timeSlot });
   if (result.error) {
     const status = result.error === 'Mandi not found' ? 404 : result.error.includes('full') ? 409 : 400;
     return res.status(status).json({ error: result.error });
@@ -835,7 +868,7 @@ app.post('/bookings', async (req, res) => {
 app.get('/bookings/:id', async (req, res) => {
   const booking = await prisma.booking.findUnique({
     where: { id: Number(req.params.id) },
-    include: { crop: true, mandi: true },
+    include: { crops: { include: { crop: true } }, mandi: true },
   });
   if (!booking) {
     return res.status(404).json({ error: 'Booking not found' });
@@ -904,7 +937,7 @@ app.post('/bookings/:id/status', async (req, res) => {
   const booking = await prisma.booking.update({
     where: { id: Number(req.params.id) },
     data: { status },
-    include: { crop: true, mandi: true },
+    include: { crops: { include: { crop: true } }, mandi: true },
   });
 
   res.json(booking);
@@ -914,7 +947,7 @@ app.get('/bookings', async (req, res) => {
   const { farmerPhone } = req.query;
   const bookings = await prisma.booking.findMany({
     where: farmerPhone ? { farmerPhone } : undefined,
-    include: { crop: true, mandi: true },
+    include: { crops: { include: { crop: true } }, mandi: true },
     // Sort by id as a tiebreaker too, so bookings created in quick
     // succession (same createdAt timestamp) still come back newest-first
     // in a guaranteed, deterministic order.

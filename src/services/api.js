@@ -29,11 +29,14 @@ export async function getCropPrice(mandiId, cropId) {
   return res.json();
 }
 
-export async function createBooking({ farmerName, farmerPhone, cropId, mandiId, quantityQuintal, slotDate, timeSlot }) {
+// crops is a real array of { cropId, quantityQuintal } - a farmer bringing
+// more than one crop on the same trip puts all of them in this one booking
+// (one time slot, one queue spot) instead of booking separately per crop.
+export async function createBooking({ farmerName, farmerPhone, crops, mandiId, slotDate, timeSlot }) {
   const res = await fetch(`${API_URL}/bookings`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ farmerName, farmerPhone, cropId, mandiId, quantityQuintal, slotDate, timeSlot }),
+    body: JSON.stringify({ farmerName, farmerPhone, crops, mandiId, slotDate, timeSlot }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Could not create booking.');

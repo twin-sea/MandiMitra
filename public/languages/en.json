@@ -85,6 +85,7 @@
   "modal.booking.title.confirm": "Booking Confirmed! (बुकिंग सफल!)",
 
   "booking.form.step.crop.label": "1. Select Crop (फसल चुनें):",
+  "booking.crop.multiSelectHint": "You can select more than one crop for this same trip.",
   "booking.form.step.centre.label": "2. Procurement Centre (चयनित खरीद केंद्र):",
   "booking.form.step.slot.label": "5. Select Time Slot:",
 
@@ -140,8 +141,8 @@
   "status.documentCheck": "(Document check)",
   "yourVehicle.label": "⭐ Your vehicle:",
 
-  "booking.form.step.mandi.label": "2. Select Mandi:",
-  "booking.form.step.quantity.label": "3. Quantity (in Quintals):",
+  "booking.form.step.mandi.label": "3. Select Mandi:",
+  "booking.form.step.quantity.label": "2. Quantity (in Quintals):",
   "booking.form.step.date.label": "4. Select Date:",
   "booking.slot.select.placeholder": "Select a time slot",
   "booking.slot.pickDateFirst": "Select a date first to see available time slots",
