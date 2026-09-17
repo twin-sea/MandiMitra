@@ -13,6 +13,7 @@ import { Profile } from './pages/Profile';
 import { HelpPage } from './pages/HelpPage';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
+import { Admin } from './pages/Admin';
 import { ChatWidget } from './components/chat/ChatWidget';
 
 function Layout({ children }) {
@@ -76,6 +77,10 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+
+      {/* Mandi-staff console - separate from the farmer-facing app, gated
+          by its own admin key (see Admin.jsx), not a farmer login. */}
+      <Route path="/admin" element={<Admin />} />
 
       {/* Default redirect to dashboard */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />

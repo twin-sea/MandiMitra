@@ -12,9 +12,11 @@ import {
   X,
   XCircle,
   AlertTriangle,
+  Zap,
+  ArrowRightCircle,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { getBookings, updateBookingStatus } from '../services/api';
+import { getBookings, updateBookingStatus, respondToCancellation } from '../services/api';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 
@@ -64,6 +66,8 @@ function statusStyle(status) {
       return 'bg-primary text-primary-foreground';
     case 'CANCELLED':
       return 'bg-destructive/10 text-destructive';
+    case 'SLOT_CANCELLED_PENDING_CHOICE':
+      return 'bg-gold text-gold-foreground';
     default:
       return 'bg-muted text-muted-foreground';
   }
@@ -79,6 +83,13 @@ export function MyBookings() {
   const [cancelBooking, setCancelBooking] = useState(null);
   const [cancelling, setCancelling] = useState(false);
   const [actionError, setActionError] = useState('');
+
+  // Which booking's "come today / next slot" choice is being submitted
+  // right now, plus any error for that one specific booking (so one
+  // farmer's mis-timed emergency-slot response doesn't block the others).
+  const [respondingId, setRespondingId] = useState(null);
+  const [respondErrors, setRespondErrors] = useState({});
+  const [respondMessage, setRespondMessage] = useState('');
 
   function loadBookings() {
     if (!farmer?.phone) return;
@@ -107,6 +118,24 @@ export function MyBookings() {
     }
   }
 
+  async function handleCancellationChoice(bookingId, choice) {
+    setRespondingId(bookingId);
+    setRespondErrors((prev) => ({ ...prev, [bookingId]: '' }));
+    setRespondMessage('');
+    try {
+      const data = await respondToCancellation(bookingId, choice);
+      setRespondMessage(data.message || 'Your choice was recorded.');
+      loadBookings();
+    } catch (err) {
+      setRespondErrors((prev) => ({
+        ...prev,
+        [bookingId]: err.message || 'Could not record your choice. Please try again.',
+      }));
+    } finally {
+      setRespondingId(null);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
@@ -115,6 +144,12 @@ export function MyBookings() {
         </h1>
         <p className="mt-1.5 text-muted-foreground">Your full mandi slot booking history</p>
       </motion.div>
+
+      {respondMessage && (
+        <Card className="border-primary/30 bg-primary/5">
+          <div className="p-4 text-sm font-semibold text-foreground">{respondMessage}</div>
+        </Card>
+      )}
 
       {loading ? (
         <Card>
@@ -169,6 +204,52 @@ export function MyBookings() {
                       {b.status}
                     </span>
                   </div>
+
+                  {b.status === 'SLOT_CANCELLED_PENDING_CHOICE' && b.cancellation && (
+                    <div className="space-y-3 rounded-xl border border-gold/40 bg-gold/10 p-4">
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+                        <p className="text-sm text-foreground">
+                          <span className="font-bold">Your slot was cancelled by the mandi: </span>
+                          {b.cancellation.reason}. Choose how you'd like to proceed.
+                        </p>
+                      </div>
+
+                      {respondErrors[b.id] && (
+                        <p className="text-sm text-destructive">{respondErrors[b.id]}</p>
+                      )}
+
+                      <div className="flex flex-col gap-2 sm:flex-row">
+                        <Button
+                          size="sm"
+                          className="flex-1"
+                          disabled={respondingId === b.id}
+                          onClick={() => handleCancellationChoice(b.id, 'EMERGENCY_TODAY')}
+                        >
+                          {respondingId === b.id ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Zap className="h-3.5 w-3.5" />
+                          )}
+                          Come today · {b.cancellation.emergencyTimeSlot}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          disabled={respondingId === b.id}
+                          onClick={() => handleCancellationChoice(b.id, 'NEXT_SLOT')}
+                        >
+                          {respondingId === b.id ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <ArrowRightCircle className="h-3.5 w-3.5" />
+                          )}
+                          Book next available slot
+                        </Button>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
                     <div className="flex items-center gap-1.5 text-muted-foreground">

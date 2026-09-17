@@ -8,6 +8,7 @@ import {
   Loader2, Users, Wheat,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getCrops, getMandis, createBooking, getBookings, getBookingQueue, getSlotAvailability } from '../services/api';
 
@@ -64,6 +65,12 @@ const FarmerDashboard = () => {
   const [queueLoading, setQueueLoading] = useState(false);
   const [queueError, setQueueError] = useState('');
 
+  // Real bookings whose slot was cancelled by mandi staff and are still
+  // waiting on this farmer's choice (come today at the emergency slot, or
+  // move to the next available slot) - counted from the same real bookings
+  // list already being fetched below, no extra request needed.
+  const [pendingCancellations, setPendingCancellations] = useState([]);
+
   const loadCurrentBooking = useCallback(async () => {
     if (!farmer?.phone) return;
     setCurrentBookingLoading(true);
@@ -71,6 +78,7 @@ const FarmerDashboard = () => {
       const bookings = await getBookings({ farmerPhone: farmer.phone });
       const latest = bookings && bookings.length > 0 ? bookings[0] : null;
       setCurrentBooking(latest);
+      setPendingCancellations((bookings || []).filter((b) => b.status === 'SLOT_CANCELLED_PENDING_CHOICE'));
       if (latest) {
         try {
           const q = await getBookingQueue(latest.id);
@@ -252,6 +260,25 @@ const FarmerDashboard = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Real alert when mandi staff have cancelled one of this farmer's
+          slots and are still waiting on their choice - links straight to
+          My Bookings, where the actual "come today / next slot" buttons live. */}
+      {pendingCancellations.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
+          <Link
+            to="/my-bookings"
+            className="flex items-center gap-3 rounded-2xl border border-gold/40 bg-gold/10 px-5 py-4 text-sm font-semibold text-foreground shadow-sm transition-colors hover:bg-gold/20"
+          >
+            <AlertCircle className="h-5 w-5 shrink-0 text-gold" />
+            <span>
+              {pendingCancellations.length === 1
+                ? 'One of your slots was cancelled by the mandi - tap to choose what happens next.'
+                : `${pendingCancellations.length} of your slots were cancelled by the mandi - tap to choose what happens next.`}
+            </span>
+          </Link>
+        </motion.div>
+      )}
 
       {/* HERO: greeting + primary "book a slot" action, combined into one
           focused section instead of two separate stacked blocks. */}

@@ -88,6 +88,36 @@ export async function updateBookingStatus(bookingId, status) {
   return data;
 }
 
+// A farmer whose slot was cancelled by mandi staff responds with a real
+// choice: 'EMERGENCY_TODAY' (take today's capped emergency slot) or
+// 'NEXT_SLOT' (move to the next real available slot, checked first later
+// today, then the next 7 days).
+export async function respondToCancellation(bookingId, choice) {
+  const res = await fetch(`${API_URL}/bookings/${bookingId}/cancellation-choice`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ choice }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Could not record your choice. Please try again.');
+  return data;
+}
+
+// Mandi-staff-only: cancel a whole real time slot and open a capped
+// same-day emergency slot for the farmers it affects. Guarded on the
+// backend by the real ADMIN_KEY environment variable, sent here as the
+// x-admin-key header (never stored anywhere but this one request).
+export async function adminCancelSlot(adminKey, mandiId, payload) {
+  const res = await fetch(`${API_URL}/admin/mandis/${mandiId}/cancel-slot`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Could not cancel this slot.');
+  return data;
+}
+
 export async function getCropPriceHistory(mandiId, cropId) {
   const res = await fetch(`${API_URL}/mandis/${mandiId}/crops/${cropId}/price-history`);
   // Same pattern as getCropPrice - a "not enough data" reply is still a

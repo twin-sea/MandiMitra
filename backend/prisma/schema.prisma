@@ -54,6 +54,28 @@ model Mandi {
   slotCapacity Int     @default(20)
   createdAt DateTime  @default(now())
   bookings  Booking[]
+  slotCancellations SlotCancellation[]
+}
+
+// A real record of a whole time slot being cancelled at a mandi (equipment
+// failure, weather, staff shortage, etc). Created by mandi staff from the
+// admin console. Opens up a capped same-day "emergency slot" so at least
+// some of the affected farmers - whose crops often can't wait for another
+// day - can still be seen today, and every affected booking is flipped to
+// SLOT_CANCELLED_PENDING_CHOICE so the farmer sees a real choice next time
+// they open the app: come today at the emergency slot, or move to the next
+// available slot with priority.
+model SlotCancellation {
+  id                Int       @id @default(autoincrement())
+  mandiId           Int
+  mandi             Mandi     @relation(fields: [mandiId], references: [id])
+  slotDate          DateTime
+  timeSlot          String
+  reason            String
+  emergencyTimeSlot String
+  emergencyCapacity Int
+  createdAt         DateTime  @default(now())
+  affectedBookings  Booking[]
 }
 
 // One Booking is one real trip to the mandi: one time slot, one spot in the
@@ -80,6 +102,12 @@ model Booking {
   createdAt       DateTime @default(now())
   crops           BookingCrop[]
   grievances      Grievance[]
+  // Set only when this booking's original slot was cancelled by mandi staff
+  // (status becomes SLOT_CANCELLED_PENDING_CHOICE). Lets the farmer's app
+  // show why, and lets /bookings/:id/cancellation-choice look up the real
+  // emergency-slot capacity and cap when they respond.
+  cancellationId  Int?
+  cancellation    SlotCancellation? @relation(fields: [cancellationId], references: [id])
 }
 
 // One crop+quantity line within a real booking. A booking with one crop has

@@ -32,6 +32,22 @@ const TIME_SLOTS = [
   '16:00-18:00',
 ];
 
+// Guards the mandi-staff "cancel a slot" endpoint with a real shared secret
+// (set as the ADMIN_KEY environment variable on the backend, separate from
+// any farmer's login) instead of leaving it open to anyone on the internet.
+// If the host hasn't set ADMIN_KEY yet, the endpoint refuses every request
+// rather than silently allowing them through unauthenticated.
+function requireAdmin(req, res, next) {
+  if (!process.env.ADMIN_KEY) {
+    return res.status(503).json({ error: 'Admin access is not configured on this server yet.' });
+  }
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== process.env.ADMIN_KEY) {
+    return res.status(401).json({ error: 'Invalid or missing admin key.' });
+  }
+  next();
+}
+
 function generateBookingToken() {
   const year = new Date().getFullYear();
   const random = Math.floor(1000 + Math.random() * 9000);
@@ -96,6 +112,44 @@ async function createRealBooking({ farmerName, farmerPhone, mandiId, crops, slot
   });
 
   return { booking };
+}
+
+// Real forward search for the next open time slot at a mandi, used when a
+// farmer whose slot was cancelled chooses to move instead of taking the
+// emergency slot. Checks later time slots on the SAME day first (so a
+// farmer with a perishable crop has a real chance of still being seen
+// today), then every slot on each of the next 7 days in order, stopping at
+// the first one whose real booked count is below the mandi's real capacity.
+async function findNextAvailableSlot(mandi, fromDate, fromTimeSlot) {
+  const fromIndex = TIME_SLOTS.indexOf(fromTimeSlot);
+  const candidates = [];
+
+  for (let i = fromIndex + 1; i < TIME_SLOTS.length; i++) {
+    candidates.push({ date: new Date(fromDate), timeSlot: TIME_SLOTS[i] });
+  }
+  for (let dayOffset = 1; dayOffset <= 7; dayOffset++) {
+    const d = new Date(fromDate);
+    d.setUTCDate(d.getUTCDate() + dayOffset);
+    for (const timeSlot of TIME_SLOTS) {
+      candidates.push({ date: d, timeSlot });
+    }
+  }
+
+  for (const candidate of candidates) {
+    const booked = await prisma.booking.count({
+      where: {
+        mandiId: mandi.id,
+        slotDate: candidate.date,
+        timeSlot: candidate.timeSlot,
+        status: { not: 'CANCELLED' },
+      },
+    });
+    if (booked < mandi.slotCapacity) {
+      return candidate;
+    }
+  }
+
+  return null;
 }
 
 function generateTicketNumber() {
@@ -914,7 +968,7 @@ app.post('/bookings', async (req, res) => {
 app.get('/bookings/:id', async (req, res) => {
   const booking = await prisma.booking.findUnique({
     where: { id: Number(req.params.id) },
-    include: { crops: { include: { crop: true } }, mandi: true },
+    include: { crops: { include: { crop: true } }, mandi: true, cancellation: true },
   });
   if (!booking) {
     return res.status(404).json({ error: 'Booking not found' });
@@ -993,13 +1047,136 @@ app.get('/bookings', async (req, res) => {
   const { farmerPhone } = req.query;
   const bookings = await prisma.booking.findMany({
     where: farmerPhone ? { farmerPhone } : undefined,
-    include: { crops: { include: { crop: true } }, mandi: true },
+    include: { crops: { include: { crop: true } }, mandi: true, cancellation: true },
     // Sort by id as a tiebreaker too, so bookings created in quick
     // succession (same createdAt timestamp) still come back newest-first
     // in a guaranteed, deterministic order.
     orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
   });
   res.json(bookings);
+});
+
+// Mandi-staff-only: cancel a whole real time slot (equipment failure,
+// weather, staff shortage, etc). Finds every real CONFIRMED booking in that
+// exact mandi/date/timeSlot, opens a capped same-day emergency slot for it,
+// and flips every affected booking to SLOT_CANCELLED_PENDING_CHOICE so each
+// farmer sees a real choice next time they open the app.
+app.post('/admin/mandis/:id/cancel-slot', requireAdmin, async (req, res) => {
+  const { slotDate, timeSlot, reason, emergencyTimeSlot, emergencyCapacity } = req.body;
+
+  const mandi = await prisma.mandi.findUnique({ where: { id: Number(req.params.id) } });
+  if (!mandi) {
+    return res.status(404).json({ error: 'Mandi not found' });
+  }
+  if (!timeSlot || !TIME_SLOTS.includes(timeSlot)) {
+    return res.status(400).json({ error: `timeSlot must be one of: ${TIME_SLOTS.join(', ')}` });
+  }
+  if (!slotDate) {
+    return res.status(400).json({ error: 'slotDate is required (YYYY-MM-DD)' });
+  }
+  if (!reason || !reason.trim()) {
+    return res.status(400).json({ error: 'A real reason for the cancellation is required.' });
+  }
+  if (!emergencyTimeSlot || !emergencyTimeSlot.trim()) {
+    return res
+      .status(400)
+      .json({ error: 'An emergency time slot label is required, e.g. "18:00-19:30 (Emergency)".' });
+  }
+  const capacity = Number(emergencyCapacity);
+  if (!Number.isInteger(capacity) || capacity <= 0) {
+    return res.status(400).json({ error: 'emergencyCapacity must be a whole number greater than 0.' });
+  }
+
+  const normalizedSlotDate = new Date(slotDate);
+
+  const affected = await prisma.booking.findMany({
+    where: { mandiId: mandi.id, slotDate: normalizedSlotDate, timeSlot, status: 'CONFIRMED' },
+  });
+  if (affected.length === 0) {
+    return res.status(400).json({ error: 'No confirmed bookings were found in that slot - nothing to cancel.' });
+  }
+
+  const cancellation = await prisma.slotCancellation.create({
+    data: {
+      mandiId: mandi.id,
+      slotDate: normalizedSlotDate,
+      timeSlot,
+      reason: reason.trim(),
+      emergencyTimeSlot: emergencyTimeSlot.trim(),
+      emergencyCapacity: capacity,
+    },
+  });
+
+  await prisma.booking.updateMany({
+    where: { id: { in: affected.map((b) => b.id) } },
+    data: { status: 'SLOT_CANCELLED_PENDING_CHOICE', cancellationId: cancellation.id },
+  });
+
+  res.status(201).json({ cancellation, affectedBookings: affected.length });
+});
+
+// A farmer whose booking was flipped to SLOT_CANCELLED_PENDING_CHOICE
+// responds with a real choice: take today's capped emergency slot, or move
+// to the next real available slot (checked first later today, then the
+// next 7 days) with priority - no advance booking-form flow required.
+app.post('/bookings/:id/cancellation-choice', async (req, res) => {
+  const { choice } = req.body;
+  if (!['EMERGENCY_TODAY', 'NEXT_SLOT'].includes(choice)) {
+    return res.status(400).json({ error: 'choice must be EMERGENCY_TODAY or NEXT_SLOT' });
+  }
+
+  const booking = await prisma.booking.findUnique({
+    where: { id: Number(req.params.id) },
+    include: { cancellation: true, mandi: true },
+  });
+  if (!booking) {
+    return res.status(404).json({ error: 'Booking not found' });
+  }
+  if (booking.status !== 'SLOT_CANCELLED_PENDING_CHOICE' || !booking.cancellation) {
+    return res.status(400).json({ error: 'This booking has no pending slot-cancellation choice to respond to.' });
+  }
+
+  const cancellation = booking.cancellation;
+
+  if (choice === 'EMERGENCY_TODAY') {
+    const takenCount = await prisma.booking.count({
+      where: {
+        cancellationId: cancellation.id,
+        timeSlot: cancellation.emergencyTimeSlot,
+        status: 'CONFIRMED',
+      },
+    });
+    if (takenCount >= cancellation.emergencyCapacity) {
+      return res.status(409).json({
+        error: 'The emergency slots for today are already full. Please choose the next available slot instead.',
+      });
+    }
+    const updated = await prisma.booking.update({
+      where: { id: booking.id },
+      data: { timeSlot: cancellation.emergencyTimeSlot, status: 'CONFIRMED' },
+      include: { crops: { include: { crop: true } }, mandi: true, cancellation: true },
+    });
+    return res.json({
+      booking: updated,
+      message: `You're booked into today's emergency slot: ${cancellation.emergencyTimeSlot}.`,
+    });
+  }
+
+  const next = await findNextAvailableSlot(booking.mandi, cancellation.slotDate, cancellation.timeSlot);
+  if (!next) {
+    return res.status(409).json({
+      error: 'No open slot was found in the next 7 days. Please file a grievance or contact mandi staff for help.',
+    });
+  }
+  const updated = await prisma.booking.update({
+    where: { id: booking.id },
+    data: { slotDate: next.date, timeSlot: next.timeSlot, status: 'CONFIRMED' },
+    include: { crops: { include: { crop: true } }, mandi: true, cancellation: true },
+  });
+  return res.json({
+    booking: updated,
+    message: `You're booked into ${next.timeSlot} on ${next.date.toDateString()}.`,
+  });
 });
 
 app.post('/grievances', async (req, res) => {
